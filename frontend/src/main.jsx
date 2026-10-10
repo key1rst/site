@@ -12,6 +12,7 @@ import {
 import { Staff } from "./staff";
 import { Portal } from "./portal";
 import "./styles.css";
+import "./experience.css";
 
 function App() {
   const [route, navigate] = useRoute();
@@ -62,7 +63,11 @@ function App() {
         </Link>
       </div>
     );
-  return <Shell navigate={navigate}>{content}</Shell>;
+  return (
+    <Shell navigate={navigate} route={route}>
+      {content}
+    </Shell>
+  );
 }
 
 createRoot(document.getElementById("root")).render(<App />);

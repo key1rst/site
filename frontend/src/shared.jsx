@@ -61,14 +61,28 @@ export function Link({ to, navigate, children, ...props }) {
   );
 }
 
-export function Shell({ navigate, children }) {
+export function Shell({ navigate, route, children }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const path = route.split("?")[0];
+  const go = (to) => {
+    setMenuOpen(false);
+    navigate(to);
+  };
+  const current = (to) =>
+    path === to || (to === "/products" && path.startsWith("/products/"))
+      ? "page"
+      : undefined;
+  useEffect(() => setMenuOpen(false), [route]);
   return (
     <>
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
       <header className="site-header">
         <div className="header-inner container">
           <Link
             to="/"
-            navigate={navigate}
+            navigate={go}
             className="brand"
             aria-label="Industrial Oils home"
           >
@@ -79,20 +93,53 @@ export function Shell({ navigate, children }) {
               <b>OILS</b>
             </span>
           </Link>
-          <nav aria-label="Main navigation">
-            <Link to="/products" navigate={navigate}>
+          <button
+            className="menu-toggle"
+            type="button"
+            aria-expanded={menuOpen}
+            aria-controls="primary-navigation"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <span className="menu-toggle-icon" aria-hidden="true" />
+            Menu
+          </button>
+          <nav
+            id="primary-navigation"
+            aria-label="Main navigation"
+            className={menuOpen ? "is-open" : ""}
+          >
+            <Link
+              to="/products"
+              navigate={go}
+              aria-current={current("/products")}
+            >
               Products
             </Link>
-            <Link to="/stock" navigate={navigate}>
+            <Link
+              to="/buy"
+              navigate={go}
+              className="mobile-only-link"
+              aria-current={current("/buy")}
+            >
+              Request a quote
+            </Link>
+            <Link to="/stock" navigate={go} aria-current={current("/stock")}>
               Current stock
             </Link>
-            <Link to="/sell" navigate={navigate}>
+            <Link to="/sell" navigate={go} aria-current={current("/sell")}>
               Sell to us
             </Link>
-            <Link to="/about" navigate={navigate}>
+            <Link to="/about" navigate={go} aria-current={current("/about")}>
               About
             </Link>
-            <Link to="/portal" navigate={navigate}>
+            <Link
+              to="/contact"
+              navigate={go}
+              aria-current={current("/contact")}
+            >
+              Contact
+            </Link>
+            <Link to="/portal" navigate={go} aria-current={current("/portal")}>
               Client portal
             </Link>
           </nav>

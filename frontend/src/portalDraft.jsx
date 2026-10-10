@@ -208,7 +208,7 @@ export function PortalDraft({ session, onSubmitted }) {
               onChange={(event) => update("message", event.target.value)}
             />
           </label>
-          <label className="checkbox">
+          <label className="check-label">
             <input
               type="checkbox"
               required

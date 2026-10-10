@@ -20,6 +20,15 @@ export function Portal({ navigate }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [portalView, setPortalView] = useState("requests");
+  const [visitedViews, setVisitedViews] = useState(["requests"]);
+  function openPortalView(next) {
+    setPortalView(next);
+    setVisitedViews((current) =>
+      current.includes(next) ? current : [...current, next],
+    );
+    window.scrollTo(0, 0);
+  }
 
   useEffect(() => {
     api("/portal/me")
@@ -97,6 +106,8 @@ export function Portal({ navigate }) {
       setMessages([]);
       setMessageDraft("");
       setNotice("");
+      setPortalView("requests");
+      setVisitedViews(["requests"]);
       setQuotes([]);
       setInquiries([]);
     } catch (failure) {
@@ -307,214 +318,266 @@ export function Portal({ navigate }) {
           Sign out
         </button>
       </div>
-      {notice && (
-        <div className="notice" role="status">
-          {notice}
-        </div>
-      )}
-      {error && (
-        <div className="notice error" role="alert">
-          {error}
-        </div>
-      )}
-      <PortalDraft
-        session={session}
-        onSubmitted={() =>
-          api("/portal/inquiries")
-            .then(setInquiries)
-            .catch((failure) => setError(failure.message))
-        }
-      />
-      <section className="portal-section">
-        <h2>
-          {session.role === "customer" ? "Your buy requests" : "Your offers"}
-        </h2>
-        {inquiries.length ? (
-          <div className="stock-list">
-            {inquiries.map((item) => (
-              <div className="stock-row" key={item.reference}>
-                <div>
-                  <button
-                    className="inline-button"
-                    onClick={() => openInquiry(item.reference)}
-                  >
-                    {item.reference}
-                  </button>
-                  <small>
-                    {new Date(item.created_at).toLocaleDateString()}
-                  </small>
-                </div>
-                <span>{item.product_text || "Published product"}</span>
-                <strong>{item.status.replaceAll("_", " ")}</strong>
-                <span>
-                  {item.quantity} {item.unit}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="notice">
-            No submissions are linked to this verified company account.
-          </div>
-        )}
-        {selectedInquiry && (
-          <div className="inquiry-detail message-thread">
-            <h3>Messages for {selectedInquiry}</h3>
-            <PortalDocuments session={session} reference={selectedInquiry} />
-            <div className="history">
-              {messages.length ? (
-                messages.map((item, index) => (
-                  <p key={index}>
-                    <b>{item.sender_type}</b>: {item.body}
-                    <small>{new Date(item.created_at).toLocaleString()}</small>
-                  </p>
-                ))
-              ) : (
-                <p>No messages yet.</p>
-              )}
-            </div>
-            <form onSubmit={sendMessage}>
-              <label>
-                New message
-                <textarea
-                  required
-                  maxLength="4000"
-                  rows="3"
-                  value={messageDraft}
-                  onChange={(event) => setMessageDraft(event.target.value)}
-                />
-              </label>
-              <button className="button" disabled={busy}>
-                Send message
-              </button>
-            </form>
-          </div>
-        )}
-      </section>
-      {session.role === "customer" && (
-        <section className="portal-section">
-          <h2>Quotations</h2>
-          {quotes.length ? (
-            <div className="workbench-grid">
-              <div className="inbox-list">
-                {quotes.map((quote) => (
-                  <button
-                    className={
-                      selected?.id === quote.id
-                        ? "inbox-item active"
-                        : "inbox-item"
-                    }
-                    key={quote.id}
-                    onClick={() => openQuote(quote.id)}
-                  >
-                    <span>{quote.status.toUpperCase()}</span>
-                    <b>{quote.reference}</b>
-                    <small>
-                      {quote.currency} {quote.total} · valid until{" "}
-                      {quote.validity_date}
-                    </small>
-                  </button>
-                ))}
-              </div>
-              <div className="inquiry-detail">
-                {selected ? (
-                  <>
-                    <span className="eyebrow">{selected.reference}</span>
-                    <h3>Quotation v{selected.revision.version}</h3>
-                    <label>
-                      Issued revision
-                      <select
-                        value={selected.revision.version}
-                        onChange={(event) =>
-                          openQuote(selected.id, event.target.value)
-                        }
-                      >
-                        {selected.versions.map((version) => (
-                          <option key={version} value={version}>
-                            Version {version}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <p>
-                      {selected.revision.currency} {selected.revision.total} ·
-                      valid until {selected.revision.validity_date}
-                    </p>
-                    <div className="history">
-                      {selected.revision.items.map((item, index) => (
-                        <p key={index}>
-                          {item.description} · {item.quantity} {item.unit} ×{" "}
-                          {item.unit_price} = {item.line_total}
-                        </p>
-                      ))}
-                    </div>
-                    <p>
-                      Delivery: {selected.revision.incoterm}{" "}
-                      {selected.revision.named_place}
-                    </p>
-                    <p>Delivery terms: {selected.revision.delivery_terms}</p>
-                    <p>Payment terms: {selected.revision.payment_terms}</p>
-                    <a
-                      className="ghost-button download-link"
-                      href={`/api/portal/quotes/${selected.id}/pdf?version=${selected.revision.version}`}
-                    >
-                      Download PDF
-                    </a>
-                    {selected.acceptance_available && (
-                      <button
-                        className="button"
-                        disabled={busy}
-                        onClick={acceptQuote}
-                      >
-                        Accept quotation
-                      </button>
-                    )}
-                    {selected.acceptance_available && (
-                      <div className="quote-form">
-                        <label>
-                          Reason to decline these terms
-                          <input
-                            maxLength="1000"
-                            value={rejectionReason}
-                            onChange={(event) =>
-                              setRejectionReason(event.target.value)
-                            }
-                          />
-                        </label>
-                        <button
-                          className="ghost-button"
-                          disabled={busy || rejectionReason.trim().length < 5}
-                          onClick={rejectQuote}
-                        >
-                          Decline quotation
-                        </button>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="notice">
-                    Select a quotation to review its issued terms.
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="notice">
-              No issued quotations are available yet.
+      <div className="workspace-layout">
+        <nav className="workspace-nav" aria-label="Portal sections">
+          {[
+            ["requests", session.role === "customer" ? "Requests" : "Offers"],
+            ...(session.role === "customer"
+              ? [
+                  ["quotes", "Quotations"],
+                  ["tracking", "Tracking"],
+                ]
+              : []),
+            ["account", "Account & documents"],
+          ].map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              className={portalView === id ? "active" : ""}
+              aria-current={portalView === id ? "page" : undefined}
+              onClick={() => openPortalView(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+        <div className="workspace-content">
+          {notice && (
+            <div className="notice" role="status">
+              {notice}
             </div>
           )}
-        </section>
-      )}
-      <PortalAccount session={session} navigate={navigate} />
-      <PortalShipments session={session} />
-      <div className="context-cta">
-        <p>Need to send a new request?</p>
-        <Link
-          to={session.role === "customer" ? "/buy" : "/sell"}
-          navigate={navigate}
-        >
-          Start a new submission ↗
-        </Link>
+          {error && (
+            <div className="notice error" role="alert">
+              {error}
+            </div>
+          )}
+          <div className="workspace-section" hidden={portalView !== "requests"}>
+            <PortalDraft
+              session={session}
+              onSubmitted={() =>
+                api("/portal/inquiries")
+                  .then(setInquiries)
+                  .catch((failure) => setError(failure.message))
+              }
+            />
+            <section className="portal-section">
+              <h2>
+                {session.role === "customer"
+                  ? "Your buy requests"
+                  : "Your offers"}
+              </h2>
+              {inquiries.length ? (
+                <div className="stock-list">
+                  {inquiries.map((item) => (
+                    <div className="stock-row" key={item.reference}>
+                      <div>
+                        <button
+                          className="inline-button"
+                          onClick={() => openInquiry(item.reference)}
+                        >
+                          {item.reference}
+                        </button>
+                        <small>
+                          {new Date(item.created_at).toLocaleDateString()}
+                        </small>
+                      </div>
+                      <span>{item.product_text || "Published product"}</span>
+                      <strong>{item.status.replaceAll("_", " ")}</strong>
+                      <span>
+                        {item.quantity} {item.unit}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="notice">
+                  No submissions are linked to this verified company account.
+                </div>
+              )}
+              {selectedInquiry && (
+                <div className="inquiry-detail message-thread">
+                  <h3>Messages for {selectedInquiry}</h3>
+                  <PortalDocuments
+                    session={session}
+                    reference={selectedInquiry}
+                  />
+                  <div className="history">
+                    {messages.length ? (
+                      messages.map((item, index) => (
+                        <p key={index}>
+                          <b>{item.sender_type}</b>: {item.body}
+                          <small>
+                            {new Date(item.created_at).toLocaleString()}
+                          </small>
+                        </p>
+                      ))
+                    ) : (
+                      <p>No messages yet.</p>
+                    )}
+                  </div>
+                  <form onSubmit={sendMessage}>
+                    <label>
+                      New message
+                      <textarea
+                        required
+                        maxLength="4000"
+                        rows="3"
+                        value={messageDraft}
+                        onChange={(event) =>
+                          setMessageDraft(event.target.value)
+                        }
+                      />
+                    </label>
+                    <button className="button" disabled={busy}>
+                      Send message
+                    </button>
+                  </form>
+                </div>
+              )}
+            </section>
+          </div>
+          {session.role === "customer" && (
+            <section
+              className="portal-section workspace-section"
+              hidden={portalView !== "quotes"}
+            >
+              <h2>Quotations</h2>
+              {quotes.length ? (
+                <div className="workbench-grid">
+                  <div className="inbox-list">
+                    {quotes.map((quote) => (
+                      <button
+                        className={
+                          selected?.id === quote.id
+                            ? "inbox-item active"
+                            : "inbox-item"
+                        }
+                        key={quote.id}
+                        onClick={() => openQuote(quote.id)}
+                      >
+                        <span>{quote.status.toUpperCase()}</span>
+                        <b>{quote.reference}</b>
+                        <small>
+                          {quote.currency} {quote.total} · valid until{" "}
+                          {quote.validity_date}
+                        </small>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="inquiry-detail">
+                    {selected ? (
+                      <>
+                        <span className="eyebrow">{selected.reference}</span>
+                        <h3>Quotation v{selected.revision.version}</h3>
+                        <label>
+                          Issued revision
+                          <select
+                            value={selected.revision.version}
+                            onChange={(event) =>
+                              openQuote(selected.id, event.target.value)
+                            }
+                          >
+                            {selected.versions.map((version) => (
+                              <option key={version} value={version}>
+                                Version {version}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <p>
+                          {selected.revision.currency} {selected.revision.total}{" "}
+                          · valid until {selected.revision.validity_date}
+                        </p>
+                        <div className="history">
+                          {selected.revision.items.map((item, index) => (
+                            <p key={index}>
+                              {item.description} · {item.quantity} {item.unit} ×{" "}
+                              {item.unit_price} = {item.line_total}
+                            </p>
+                          ))}
+                        </div>
+                        <p>
+                          Delivery: {selected.revision.incoterm}{" "}
+                          {selected.revision.named_place}
+                        </p>
+                        <p>
+                          Delivery terms: {selected.revision.delivery_terms}
+                        </p>
+                        <p>Payment terms: {selected.revision.payment_terms}</p>
+                        <a
+                          className="ghost-button download-link"
+                          href={`/api/portal/quotes/${selected.id}/pdf?version=${selected.revision.version}`}
+                        >
+                          Download PDF
+                        </a>
+                        {selected.acceptance_available && (
+                          <button
+                            className="button"
+                            disabled={busy}
+                            onClick={acceptQuote}
+                          >
+                            Accept quotation
+                          </button>
+                        )}
+                        {selected.acceptance_available && (
+                          <div className="quote-form">
+                            <label>
+                              Reason to decline these terms
+                              <input
+                                maxLength="1000"
+                                value={rejectionReason}
+                                onChange={(event) =>
+                                  setRejectionReason(event.target.value)
+                                }
+                              />
+                            </label>
+                            <button
+                              className="ghost-button"
+                              disabled={
+                                busy || rejectionReason.trim().length < 5
+                              }
+                              onClick={rejectQuote}
+                            >
+                              Decline quotation
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="notice">
+                        Select a quotation to review its issued terms.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="notice">
+                  No issued quotations are available yet.
+                </div>
+              )}
+            </section>
+          )}
+          <div className="workspace-section" hidden={portalView !== "account"}>
+            {visitedViews.includes("account") && (
+              <PortalAccount session={session} navigate={navigate} />
+            )}
+          </div>
+          <div className="workspace-section" hidden={portalView !== "tracking"}>
+            {visitedViews.includes("tracking") && (
+              <PortalShipments session={session} />
+            )}
+          </div>
+          <div className="context-cta">
+            <p>Need to send a new request?</p>
+            <Link
+              to={session.role === "customer" ? "/buy" : "/sell"}
+              navigate={navigate}
+            >
+              Start a new submission ↗
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

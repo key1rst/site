@@ -53,6 +53,15 @@ export function Staff({ navigate }) {
   const [filters, setFilters] = useState({ q: "", owner: "all", priority: "" });
   const [offset, setOffset] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [view, setView] = useState("inbox");
+  const [visited, setVisited] = useState(["inbox"]);
+  function openView(next) {
+    setView(next);
+    setVisited((current) =>
+      current.includes(next) ? current : [...current, next],
+    );
+    window.scrollTo(0, 0);
+  }
   const inboxQuery = new URLSearchParams({
     ...filters,
     offset: String(offset),
@@ -210,6 +219,8 @@ export function Staff({ navigate }) {
     setTab("all");
     setFilters({ q: "", owner: "all", priority: "" });
     setOffset(0);
+    setView("inbox");
+    setVisited(["inbox"]);
   }
   if (loading)
     return <div className="container page notice">Checking session…</div>;
@@ -251,12 +262,33 @@ export function Staff({ navigate }) {
       </div>
     );
   const visible = items.filter((item) => tab === "all" || item.kind === tab);
+  const workspaceViews = [
+    ["inbox", "Inquiries"],
+    ["quotes", "Quotations"],
+    ["shipments", "Shipments"],
+    ["reports", "Reports"],
+    ["companies", "Companies"],
+    ["integrations", "Integrations"],
+    ["catalog", "Catalog & stock"],
+  ].filter(
+    ([id]) =>
+      id === "inbox" ||
+      id === "reports" ||
+      (session.role !== "procurement" &&
+        ["quotes", "shipments"].includes(id)) ||
+      (session.role === "admin" &&
+        ["companies", "integrations", "catalog"].includes(id)),
+  );
   return (
     <div className="container page staff-page">
       <div className="staff-heading">
         <div>
           <span className="eyebrow">STAFF WORKSPACE</span>
-          <h1>Inquiry inbox</h1>
+          <h1>
+            {view === "inbox"
+              ? "Inquiry inbox"
+              : workspaceViews.find(([id]) => id === view)?.[1]}
+          </h1>
           <p>
             {session.email} · {session.role}
           </p>
@@ -265,378 +297,445 @@ export function Staff({ navigate }) {
           Sign out
         </button>
       </div>
-      {dashboard && (
-        <section className="metric-grid" aria-label="CRM overview">
-          <div>
-            <span>Leads this month</span>
-            <b>{dashboard.counts.leads_this_month || 0}</b>
-          </div>
-          <div>
-            <span>RFQs</span>
-            <b>{dashboard.counts.rfqs || 0}</b>
-          </div>
-          <div>
-            <span>Supplier offers</span>
-            <b>{dashboard.counts.offers || 0}</b>
-          </div>
-          <div>
-            <span>Open inquiries</span>
-            <b>{dashboard.counts.open || 0}</b>
-          </div>
-          <div>
-            <span>Overdue tasks</span>
-            <b>{dashboard.overdue_tasks || 0}</b>
-          </div>
-        </section>
-      )}
-      <div className="tabs" role="group" aria-label="Filter inquiries">
-        {["all", "buy", "sell", "contact"]
-          .filter(
-            (value) =>
-              session.role === "admin" ||
-              (session.role === "sales"
-                ? value !== "sell"
-                : ["all", "sell"].includes(value)),
-          )
-          .map((value) => (
+      <div className="workspace-layout">
+        <nav className="workspace-nav" aria-label="Staff tools">
+          {workspaceViews.map(([id, label]) => (
             <button
-              key={value}
-              className={tab === value ? "active" : ""}
-              onClick={() => {
-                setTab(value);
-                setOffset(0);
-              }}
+              key={id}
+              type="button"
+              aria-current={view === id ? "page" : undefined}
+              className={view === id ? "active" : ""}
+              onClick={() => openView(id)}
             >
-              {value === "all"
-                ? "All"
-                : value === "buy"
-                  ? "Buy requests"
-                  : value === "sell"
-                    ? "Supplier offers"
-                    : "Contact"}
+              {label}
             </button>
           ))}
-      </div>
-      <div className="form-grid inbox-filters">
-        <label>
-          Search company, email, product or reference
-          <input
-            type="search"
-            maxLength="160"
-            value={filters.q}
-            onChange={(event) => {
-              setFilters({ ...filters, q: event.target.value });
-              setOffset(0);
-            }}
-          />
-        </label>
-        <label>
-          Owner
-          <select
-            value={filters.owner}
-            onChange={(event) => {
-              setFilters({ ...filters, owner: event.target.value });
-              setOffset(0);
-            }}
-          >
-            <option value="all">All owners</option>
-            <option value="mine">Assigned to me</option>
-            <option value="unassigned">Unassigned queue</option>
-          </select>
-        </label>
-        <label>
-          Priority
-          <select
-            value={filters.priority}
-            onChange={(event) => {
-              setFilters({ ...filters, priority: event.target.value });
-              setOffset(0);
-            }}
-          >
-            <option value="">All priorities</option>
-            {["low", "normal", "high"].map((value) => (
-              <option key={value}>{value}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <div className="quote-actions">
-        <button
-          className="inline-button"
-          disabled={!offset}
-          onClick={() => setOffset(Math.max(0, offset - 100))}
-        >
-          Previous 100
-        </button>
-        <span>
-          Records {offset + 1}–{offset + items.length}
-        </span>
-        <button
-          className="inline-button"
-          disabled={items.length < 100}
-          onClick={() => setOffset(offset + 100)}
-        >
-          Next 100
-        </button>
-      </div>
-      {error && (
-        <div className="notice error" role="alert">
-          {error}
-        </div>
-      )}
-      <div className="crm-grid">
-        <div className="inbox-list">
-          {visible.length ? (
-            visible.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => openItem(item.id)}
-                className={
-                  selected?.id === item.id ? "inbox-item active" : "inbox-item"
-                }
-              >
-                <span>
-                  {item.kind.toUpperCase()} · {item.status}
-                </span>
-                <b>{item.company_name}</b>
-                <small>
-                  {item.reference} ·{" "}
-                  {new Date(item.created_at).toLocaleDateString()}
-                </small>
-              </button>
-            ))
-          ) : (
-            <div className="notice">No inquiries in this queue.</div>
-          )}
-        </div>
-        <div className="inquiry-detail">
-          {selected ? (
-            <>
-              <span className="eyebrow">{selected.reference}</span>
-              <h2>{selected.company_name}</h2>
-              <p>
-                {selected.contact_name} · {selected.email}
-              </p>
-              <dl>
+        </nav>
+        <div className="workspace-content">
+          <div className="workspace-section" hidden={view !== "inbox"}>
+            {dashboard && (
+              <section className="metric-grid" aria-label="CRM overview">
                 <div>
-                  <dt>Type</dt>
-                  <dd>{selected.kind}</dd>
+                  <span>Leads this month</span>
+                  <b>{dashboard.counts.leads_this_month || 0}</b>
                 </div>
                 <div>
-                  <dt>Status</dt>
-                  <dd>{selected.status}</dd>
+                  <span>RFQs</span>
+                  <b>{dashboard.counts.rfqs || 0}</b>
                 </div>
                 <div>
-                  <dt>Product</dt>
-                  <dd>
-                    {selected.product_text ||
-                      selected.product_id ||
-                      "Not specified"}
-                  </dd>
+                  <span>Supplier offers</span>
+                  <b>{dashboard.counts.offers || 0}</b>
                 </div>
                 <div>
-                  <dt>Quantity</dt>
-                  <dd>
-                    {selected.quantity
-                      ? `${selected.quantity} ${selected.unit}`
-                      : "Not specified"}
-                  </dd>
+                  <span>Open inquiries</span>
+                  <b>{dashboard.counts.open || 0}</b>
                 </div>
                 <div>
-                  <dt>Destination</dt>
-                  <dd>{selected.destination_country || "Not specified"}</dd>
+                  <span>Overdue tasks</span>
+                  <b>{dashboard.overdue_tasks || 0}</b>
                 </div>
-                <div>
-                  <dt>Origin</dt>
-                  <dd>{selected.origin || "Not specified"}</dd>
-                </div>
-              </dl>
-              {selected.message && (
-                <p className="message-box">{selected.message}</p>
-              )}
-              <InquiryOperations
-                session={session}
-                inquiry={selected}
-                onChanged={() =>
-                  refreshInbox().catch((failure) => setError(failure.message))
-                }
-                onOpen={openItem}
-              />
-              <h3>Follow up</h3>
-              <form onSubmit={save}>
-                <label>
-                  Status
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
+              </section>
+            )}
+            <div className="tabs" role="group" aria-label="Filter inquiries">
+              {["all", "buy", "sell", "contact"]
+                .filter(
+                  (value) =>
+                    session.role === "admin" ||
+                    (session.role === "sales"
+                      ? value !== "sell"
+                      : ["all", "sell"].includes(value)),
+                )
+                .map((value) => (
+                  <button
+                    key={value}
+                    className={tab === value ? "active" : ""}
+                    onClick={() => {
+                      setTab(value);
+                      setOffset(0);
+                    }}
                   >
-                    {stages[selected.kind].map((stage) => (
-                      <option value={stage} key={stage}>
-                        {stage.replaceAll("_", " ")}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Internal note
-                  <textarea
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    rows="3"
-                    placeholder="Add context or a reason for lost/rejected"
-                  />
-                </label>
-                <button className="button" disabled={busy}>
-                  {busy ? "Saving…" : "Save follow-up"}
-                </button>
-              </form>
-              <h3>Tasks</h3>
-              <div className="history">
-                {selected.tasks?.length ? (
-                  selected.tasks.map((item) => (
-                    <p key={item.id}>
-                      <b>{item.title}</b> · {item.priority} · due{" "}
-                      {item.due_date} · {item.status}
-                      {item.status !== "completed" && (
-                        <button
-                          type="button"
-                          className="inline-button"
-                          onClick={() => completeTask(item.id)}
-                        >
-                          Complete
-                        </button>
-                      )}
-                    </p>
-                  ))
-                ) : (
-                  <p>No tasks yet.</p>
-                )}
+                    {value === "all"
+                      ? "All"
+                      : value === "buy"
+                        ? "Buy requests"
+                        : value === "sell"
+                          ? "Supplier offers"
+                          : "Contact"}
+                  </button>
+                ))}
+            </div>
+            <div className="form-grid inbox-filters">
+              <label>
+                Search company, email, product or reference
+                <input
+                  type="search"
+                  maxLength="160"
+                  value={filters.q}
+                  onChange={(event) => {
+                    setFilters({ ...filters, q: event.target.value });
+                    setOffset(0);
+                  }}
+                />
+              </label>
+              <label>
+                Owner
+                <select
+                  value={filters.owner}
+                  onChange={(event) => {
+                    setFilters({ ...filters, owner: event.target.value });
+                    setOffset(0);
+                  }}
+                >
+                  <option value="all">All owners</option>
+                  <option value="mine">Assigned to me</option>
+                  <option value="unassigned">Unassigned queue</option>
+                </select>
+              </label>
+              <label>
+                Priority
+                <select
+                  value={filters.priority}
+                  onChange={(event) => {
+                    setFilters({ ...filters, priority: event.target.value });
+                    setOffset(0);
+                  }}
+                >
+                  <option value="">All priorities</option>
+                  {["low", "normal", "high"].map((value) => (
+                    <option key={value}>{value}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="inbox-pagination" aria-label="Inquiry pages">
+              <button
+                className="inline-button"
+                disabled={!offset}
+                onClick={() => setOffset(Math.max(0, offset - 100))}
+              >
+                Previous 100
+              </button>
+              <span>
+                {items.length
+                  ? `Records ${offset + 1}–${offset + items.length}`
+                  : "No records on this page"}
+              </span>
+              <button
+                className="inline-button"
+                disabled={items.length < 100}
+                onClick={() => setOffset(offset + 100)}
+              >
+                Next 100
+              </button>
+            </div>
+            {error && (
+              <div className="notice error" role="alert">
+                {error}
               </div>
-              <form onSubmit={createTask}>
-                <label>
-                  Task title
-                  <input
-                    required
-                    minLength="3"
-                    value={task.title}
-                    onChange={(e) =>
-                      setTask({ ...task, title: e.target.value })
-                    }
-                  />
-                </label>
-                <div className="form-grid">
-                  <label>
-                    Due date
-                    <input
-                      type="date"
-                      required
-                      value={task.due_date}
-                      onChange={(e) =>
-                        setTask({ ...task, due_date: e.target.value })
-                      }
-                    />
-                  </label>
-                  <label>
-                    Priority
-                    <select
-                      value={task.priority}
-                      onChange={(e) =>
-                        setTask({ ...task, priority: e.target.value })
+            )}
+            <div className="crm-grid">
+              <div className="inbox-list">
+                {visible.length ? (
+                  visible.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => openItem(item.id)}
+                      className={
+                        selected?.id === item.id
+                          ? "inbox-item active"
+                          : "inbox-item"
                       }
                     >
-                      <option value="low">Low</option>
-                      <option value="normal">Normal</option>
-                      <option value="high">High</option>
-                    </select>
-                  </label>
-                </div>
-                <button className="ghost-button" disabled={busy}>
-                  Add task
-                </button>
-              </form>
-              {selected.documents?.length > 0 && (
-                <>
-                  <h3>Private documents</h3>
-                  <div className="history">
-                    {selected.documents.map((document) => (
-                      <p key={document.id}>
-                        <a href={`/api/admin/documents/${document.id}`}>
-                          {document.filename} (download)
-                        </a>
-                        <small>
-                          {document.scan_status} ·{" "}
-                          {Math.round(document.bytes / 1024)} KB
-                        </small>
-                      </p>
-                    ))}
-                  </div>
-                </>
-              )}
-              <h3>Portal messages</h3>
-              <div className="history">
-                {messages.length ? (
-                  messages.map((item, index) => (
-                    <p key={index}>
-                      <b>{item.sender_type}</b>: {item.body}
+                      <span>
+                        {item.kind.toUpperCase()} · {item.status}
+                      </span>
+                      <b>{item.company_name}</b>
                       <small>
-                        {new Date(item.created_at).toLocaleString()}
+                        {item.reference} ·{" "}
+                        {new Date(item.created_at).toLocaleDateString()}
                       </small>
-                    </p>
+                    </button>
                   ))
                 ) : (
-                  <p>No shared messages yet.</p>
+                  <div className="notice">No inquiries in this queue.</div>
                 )}
               </div>
-              <form onSubmit={sendPortalMessage}>
-                <label>
-                  Reply to verified portal contact
-                  <textarea
-                    required
-                    maxLength="4000"
-                    rows="3"
-                    value={messageDraft}
-                    onChange={(e) => setMessageDraft(e.target.value)}
-                  />
-                </label>
-                <button className="ghost-button" disabled={busy}>
-                  Send message
-                </button>
-              </form>
-              <h3>History</h3>
-              <div className="history">
-                {selected.activity.map((item, index) => (
-                  <p key={index}>
-                    <b>{item.action.replace("_", " ")}</b> {item.detail}
-                    <small>{new Date(item.created_at).toLocaleString()}</small>
-                  </p>
-                ))}
-                {selected.notes.map((item, index) => (
-                  <p key={`n${index}`}>
-                    <b>{item.author}</b>: {item.body}
-                    <small>{new Date(item.created_at).toLocaleString()}</small>
-                  </p>
-                ))}
+              <div className="inquiry-detail">
+                {selected ? (
+                  <>
+                    <span className="eyebrow">{selected.reference}</span>
+                    <h2>{selected.company_name}</h2>
+                    <p>
+                      {selected.contact_name} · {selected.email}
+                    </p>
+                    <dl>
+                      <div>
+                        <dt>Type</dt>
+                        <dd>{selected.kind}</dd>
+                      </div>
+                      <div>
+                        <dt>Status</dt>
+                        <dd>{selected.status}</dd>
+                      </div>
+                      <div>
+                        <dt>Product</dt>
+                        <dd>
+                          {selected.product_text ||
+                            selected.product_id ||
+                            "Not specified"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Quantity</dt>
+                        <dd>
+                          {selected.quantity
+                            ? `${selected.quantity} ${selected.unit}`
+                            : "Not specified"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Destination</dt>
+                        <dd>
+                          {selected.destination_country || "Not specified"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Origin</dt>
+                        <dd>{selected.origin || "Not specified"}</dd>
+                      </div>
+                    </dl>
+                    {selected.message && (
+                      <p className="message-box">{selected.message}</p>
+                    )}
+                    <InquiryOperations
+                      session={session}
+                      inquiry={selected}
+                      onChanged={() =>
+                        refreshInbox().catch((failure) =>
+                          setError(failure.message),
+                        )
+                      }
+                      onOpen={openItem}
+                    />
+                    <h3>Follow up</h3>
+                    <form onSubmit={save}>
+                      <label>
+                        Status
+                        <select
+                          value={status}
+                          onChange={(e) => setStatus(e.target.value)}
+                        >
+                          {stages[selected.kind].map((stage) => (
+                            <option value={stage} key={stage}>
+                              {stage.replaceAll("_", " ")}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Internal note
+                        <textarea
+                          value={note}
+                          onChange={(e) => setNote(e.target.value)}
+                          rows="3"
+                          placeholder="Add context or a reason for lost/rejected"
+                        />
+                      </label>
+                      <button className="button" disabled={busy}>
+                        {busy ? "Saving…" : "Save follow-up"}
+                      </button>
+                    </form>
+                    <h3>Tasks</h3>
+                    <div className="history">
+                      {selected.tasks?.length ? (
+                        selected.tasks.map((item) => (
+                          <p key={item.id}>
+                            <b>{item.title}</b> · {item.priority} · due{" "}
+                            {item.due_date} · {item.status}
+                            {item.status !== "completed" && (
+                              <button
+                                type="button"
+                                className="inline-button"
+                                onClick={() => completeTask(item.id)}
+                              >
+                                Complete
+                              </button>
+                            )}
+                          </p>
+                        ))
+                      ) : (
+                        <p>No tasks yet.</p>
+                      )}
+                    </div>
+                    <form onSubmit={createTask}>
+                      <label>
+                        Task title
+                        <input
+                          required
+                          minLength="3"
+                          value={task.title}
+                          onChange={(e) =>
+                            setTask({ ...task, title: e.target.value })
+                          }
+                        />
+                      </label>
+                      <div className="form-grid">
+                        <label>
+                          Due date
+                          <input
+                            type="date"
+                            required
+                            value={task.due_date}
+                            onChange={(e) =>
+                              setTask({ ...task, due_date: e.target.value })
+                            }
+                          />
+                        </label>
+                        <label>
+                          Priority
+                          <select
+                            value={task.priority}
+                            onChange={(e) =>
+                              setTask({ ...task, priority: e.target.value })
+                            }
+                          >
+                            <option value="low">Low</option>
+                            <option value="normal">Normal</option>
+                            <option value="high">High</option>
+                          </select>
+                        </label>
+                      </div>
+                      <button className="ghost-button" disabled={busy}>
+                        Add task
+                      </button>
+                    </form>
+                    {selected.documents?.length > 0 && (
+                      <>
+                        <h3>Private documents</h3>
+                        <div className="history">
+                          {selected.documents.map((document) => (
+                            <p key={document.id}>
+                              <a href={`/api/admin/documents/${document.id}`}>
+                                {document.filename} (download)
+                              </a>
+                              <small>
+                                {document.scan_status} ·{" "}
+                                {Math.round(document.bytes / 1024)} KB
+                              </small>
+                            </p>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    <h3>Portal messages</h3>
+                    <div className="history">
+                      {messages.length ? (
+                        messages.map((item, index) => (
+                          <p key={index}>
+                            <b>{item.sender_type}</b>: {item.body}
+                            <small>
+                              {new Date(item.created_at).toLocaleString()}
+                            </small>
+                          </p>
+                        ))
+                      ) : (
+                        <p>No shared messages yet.</p>
+                      )}
+                    </div>
+                    <form onSubmit={sendPortalMessage}>
+                      <label>
+                        Reply to verified portal contact
+                        <textarea
+                          required
+                          maxLength="4000"
+                          rows="3"
+                          value={messageDraft}
+                          onChange={(e) => setMessageDraft(e.target.value)}
+                        />
+                      </label>
+                      <button className="ghost-button" disabled={busy}>
+                        Send message
+                      </button>
+                    </form>
+                    <h3>History</h3>
+                    <div className="history">
+                      {selected.activity.map((item, index) => (
+                        <p key={index}>
+                          <b>{item.action.replace("_", " ")}</b> {item.detail}
+                          <small>
+                            {new Date(item.created_at).toLocaleString()}
+                          </small>
+                        </p>
+                      ))}
+                      {selected.notes.map((item, index) => (
+                        <p key={`n${index}`}>
+                          <b>{item.author}</b>: {item.body}
+                          <small>
+                            {new Date(item.created_at).toLocaleString()}
+                          </small>
+                        </p>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="notice">
+                    Select an inquiry to review and follow up.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="workspace-section" hidden={view !== "reports"}>
+            {visited.includes("reports") && (
+              <OperationsReports
+                session={session}
+                refreshKey={refreshKey}
+                onOpen={(id) => {
+                  openView("inbox");
+                  openItem(id);
+                }}
+              />
+            )}
+          </div>
+          {session.role !== "procurement" && (
+            <>
+              <div className="workspace-section" hidden={view !== "quotes"}>
+                {visited.includes("quotes") && (
+                  <QuoteWorkbench session={session} />
+                )}
+              </div>
+              <div className="workspace-section" hidden={view !== "shipments"}>
+                {visited.includes("shipments") && (
+                  <ShipmentWorkbench session={session} />
+                )}
               </div>
             </>
-          ) : (
-            <div className="notice">
-              Select an inquiry to review and follow up.
-            </div>
+          )}
+          {session.role === "admin" && (
+            <>
+              <div className="workspace-section" hidden={view !== "companies"}>
+                {visited.includes("companies") && (
+                  <CompanyAccess session={session} />
+                )}
+              </div>
+              <div
+                className="workspace-section"
+                hidden={view !== "integrations"}
+              >
+                {visited.includes("integrations") && (
+                  <IntegrationWorkbench session={session} />
+                )}
+              </div>
+              <div className="workspace-section" hidden={view !== "catalog"}>
+                {visited.includes("catalog") && (
+                  <AdminTools session={session} />
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
-      {session.role === "admin" && <AdminTools session={session} />}
-      <OperationsReports
-        session={session}
-        refreshKey={refreshKey}
-        onOpen={openItem}
-      />
-      {session.role !== "procurement" && <QuoteWorkbench session={session} />}
-      {session.role !== "procurement" && (
-        <ShipmentWorkbench session={session} />
-      )}
-      {session.role === "admin" && <IntegrationWorkbench session={session} />}
-      {session.role === "admin" && <CompanyAccess session={session} />}
     </div>
   );
 }

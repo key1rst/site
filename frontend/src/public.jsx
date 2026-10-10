@@ -1,114 +1,240 @@
 import React, { useEffect, useState } from "react";
 import heroImage from "../../ui-images/home-hero.png";
-import hydraulicImage from "../../ui-images/category-hydraulic-oils.png";
-import gearImage from "../../ui-images/category-gear-oils.png";
 import { api, Link, SectionHead, useData, DataState } from "./shared";
 
 export function Home({ navigate }) {
+  const [query, setQuery] = useState("");
+  const published = useData("/products");
+  const stock = useData("/stock");
   return (
     <>
-      <section className="hero">
-        <img
-          src={heroImage}
-          alt="Industrial hydraulic machinery"
-          className="hero-image"
-        />
-        <div className="hero-shade" />
-        <div className="container hero-content">
-          <span className="eyebrow light">INDUSTRIAL PRODUCT SUPPLY</span>
-          <h1>
-            Industrial oils.
-            <br />
-            <em>Clearer sourcing.</em>
-          </h1>
-          <p>
-            Explore product information and current published stock, then send
-            your requirements directly to our team.
-          </p>
-          <div className="hero-actions">
-            <Link to="/products" navigate={navigate} className="button">
-              Explore products <span aria-hidden="true">↗</span>
-            </Link>
-            <Link to="/buy" navigate={navigate} className="text-link">
-              Request a quote <span aria-hidden="true">→</span>
-            </Link>
+      <section className="home-hero">
+        <div className="container home-hero-grid">
+          <div className="home-hero-copy">
+            <span className="eyebrow">
+              INDUSTRIAL OILS · DIRECT COMPANY SUPPLY
+            </span>
+            <h1>Find the oil you need. Start the right conversation.</h1>
+            <p>
+              Review published products and stock, then send your requirement
+              directly to the company. Supplier offers are handled privately.
+            </p>
+            <form
+              className="home-search"
+              role="search"
+              onSubmit={(event) => {
+                event.preventDefault();
+                navigate(`/products?q=${encodeURIComponent(query.trim())}`);
+              }}
+            >
+              <label htmlFor="home-product-search">
+                Search the product catalog
+              </label>
+              <div className="home-search-row">
+                <input
+                  id="home-product-search"
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Product name or grade"
+                />
+                <button type="submit" className="button">
+                  Search
+                </button>
+              </div>
+            </form>
+            <div className="home-hero-links">
+              <Link to="/buy" navigate={navigate} className="button">
+                Request a quotation <span aria-hidden="true">↗</span>
+              </Link>
+              <Link to="/stock" navigate={navigate} className="plain-link">
+                Check published stock <span aria-hidden="true">→</span>
+              </Link>
+            </div>
           </div>
-        </div>
-        <div className="hero-index container">
-          <span>01 / PRODUCT DISCOVERY</span>
-          <span>BUY FROM US&nbsp;&nbsp; · &nbsp;&nbsp;SELL TO US</span>
-        </div>
-      </section>
-      <section className="intro-strip">
-        <div className="container strip-grid">
-          <p>
-            <b>01</b> Review products and specifications
-          </p>
-          <p>
-            <b>02</b> Check published availability
-          </p>
-          <p>
-            <b>03</b> Send a commercial inquiry
-          </p>
+          <figure className="home-hero-figure">
+            <img
+              src={heroImage}
+              alt="Illustration of industrial hydraulic machinery"
+            />
+            <figcaption>Industrial equipment illustration</figcaption>
+          </figure>
         </div>
       </section>
-      <section className="section container">
-        <SectionHead
-          eyebrow="PRODUCT FAMILIES"
-          title="Find the right starting point"
-          text="Explore common industrial lubricant applications. Published products will appear as approved information becomes available."
-        />
-        <div className="category-grid">
-          <Link
-            to="/products?q=hydraulic"
-            navigate={navigate}
-            className="category-card"
-          >
-            <img src={hydraulicImage} alt="Industrial hydraulic press" />
-            <span>01 / APPLICATION</span>
-            <h3>Hydraulic oils</h3>
-            <b>Explore products ↗</b>
+      <section
+        className="container home-pathways"
+        aria-label="Ways to work with us"
+      >
+        <Link to="/products" navigate={navigate} className="pathway-card">
+          <span>01 / DISCOVER</span>
+          <strong>Browse products</strong>
+          <p>Review published grades, applications, and packaging.</p>
+          <b>
+            Open catalog <span aria-hidden="true">→</span>
+          </b>
+        </Link>
+        <Link to="/stock" navigate={navigate} className="pathway-card">
+          <span>02 / AVAILABILITY</span>
+          <strong>Check stock</strong>
+          <p>See inventory the company has approved for public display.</p>
+          <b>
+            View stock <span aria-hidden="true">→</span>
+          </b>
+        </Link>
+        <Link to="/sell" navigate={navigate} className="pathway-card">
+          <span>03 / PROCUREMENT</span>
+          <strong>Offer supply to us</strong>
+          <p>Submit a private supplier offer for procurement review.</p>
+          <b>
+            Submit an offer <span aria-hidden="true">→</span>
+          </b>
+        </Link>
+      </section>
+      <section className="section container home-families">
+        <div className="section-heading-row">
+          <SectionHead
+            eyebrow="PRODUCT FAMILIES"
+            title="Start with the product type"
+            text="Choose a family to narrow the catalog, or search for a specific grade above."
+          />
+          <Link to="/products" navigate={navigate} className="section-link">
+            All products <span aria-hidden="true">→</span>
           </Link>
-          <Link
-            to="/products?q=gear"
-            navigate={navigate}
-            className="category-card"
-          >
-            <img src={gearImage} alt="Industrial gearbox" />
-            <span>02 / APPLICATION</span>
-            <h3>Gear oils</h3>
-            <b>Explore products ↗</b>
-          </Link>
+        </div>
+        <div className="family-list">
+          {[
+            ["Base oils", "Base Oils"],
+            ["Industrial lubricants", "Industrial Lubricants"],
+            ["Greases", "Greases"],
+            ["Process oils", "Process Oils"],
+          ].map(([label, value]) => (
+            <Link
+              key={value}
+              to={`/products?category=${encodeURIComponent(value)}`}
+              navigate={navigate}
+              className="family-link"
+            >
+              {label} <span aria-hidden="true">→</span>
+            </Link>
+          ))}
         </div>
       </section>
-      <section className="section pale">
-        <div className="container two-column">
+      <section className="section home-availability">
+        <div className="container home-availability-grid">
           <div>
             <SectionHead
-              eyebrow="TWO WAYS TO WORK WITH US"
-              title="One direct commercial conversation"
-              text="Submit a purchase requirement or privately offer supply to the company. Each request goes to the relevant team for review."
+              eyebrow="PUBLISHED AVAILABILITY"
+              title="See what is listed now"
+              text="Public stock is subject to confirmation when you inquire."
             />
+            <Link to="/stock" navigate={navigate} className="plain-link">
+              View all published stock <span aria-hidden="true">→</span>
+            </Link>
           </div>
-          <div className="flow-cards">
-            <Link to="/buy" navigate={navigate} className="flow-card">
-              <span>FOR BUYERS</span>
-              <h3>Buy from us</h3>
-              <p>Tell us the product, quantity, and destination you need.</p>
-              <strong>
-                Send a request <span>↗</span>
-              </strong>
-            </Link>
-            <Link to="/sell" navigate={navigate} className="flow-card">
-              <span>FOR SUPPLIERS</span>
-              <h3>Sell to us</h3>
-              <p>Share your available product and terms for private review.</p>
-              <strong>
-                Submit an offer <span>↗</span>
-              </strong>
-            </Link>
+          <div className="home-stock-list">
+            {stock.loading ? (
+              <p role="status">Checking published stock…</p>
+            ) : stock.error ? (
+              <div className="notice error" role="alert">
+                Stock information is unavailable right now.{" "}
+                <Link to="/buy" navigate={navigate}>
+                  Send a requirement
+                </Link>
+                .
+              </div>
+            ) : stock.data?.length ? (
+              stock.data.slice(0, 3).map((lot) => (
+                <Link
+                  key={lot.id}
+                  to={`/buy?product_id=${lot.product_id}&lot_id=${lot.id}`}
+                  navigate={navigate}
+                  className="home-stock-row"
+                >
+                  <span>
+                    <b>{lot.name}</b>
+                    <small>
+                      {lot.grade || "Grade on request"} · Updated{" "}
+                      {new Date(lot.updated_at).toLocaleDateString()}
+                    </small>
+                  </span>
+                  <span>
+                    {lot.quantity === null
+                      ? "Quantity on request"
+                      : `${lot.quantity} ${lot.unit}`}
+                  </span>
+                  <strong>
+                    Inquire <span aria-hidden="true">→</span>
+                  </strong>
+                </Link>
+              ))
+            ) : (
+              <div className="home-stock-empty">
+                <strong>No public stock is listed yet.</strong>
+                <p>
+                  Tell us the product and quantity you need; the team can review
+                  your request.
+                </p>
+                <Link to="/buy" navigate={navigate} className="plain-link">
+                  Send a requirement →
+                </Link>
+              </div>
+            )}
           </div>
         </div>
+      </section>
+      <section className="section container home-products">
+        <div className="section-heading-row">
+          <SectionHead
+            eyebrow="PUBLISHED CATALOG"
+            title="Product pages"
+            text="Only approved product information appears here."
+          />
+          <Link to="/products" navigate={navigate} className="section-link">
+            Browse catalog <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+        {published.loading ? (
+          <div className="notice" role="status">
+            Loading published products…
+          </div>
+        ) : published.error ? (
+          <div className="notice error" role="alert">
+            Product information is temporarily unavailable.{" "}
+            <Link to="/buy" navigate={navigate}>
+              Send your requirement
+            </Link>
+            .
+          </div>
+        ) : published.data?.length ? (
+          <div className="product-grid">
+            {published.data.slice(0, 3).map((item) => (
+              <Link
+                key={item.id}
+                to={`/products/${item.slug}`}
+                navigate={navigate}
+                className="product-card"
+              >
+                <span>{item.category}</span>
+                <h3>{item.name}</h3>
+                <p>{item.grade || "Details available on request"}</p>
+                <strong>Review product</strong>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-action">
+            <div>
+              <h3>Product pages are being prepared</h3>
+              <p>
+                Tell us the grade and quantity you need. The team can review
+                your request directly.
+              </p>
+            </div>
+            <Link to="/buy" navigate={navigate} className="ghost-button">
+              Send a requirement
+            </Link>
+          </div>
+        )}
       </section>
     </>
   );
@@ -119,25 +245,35 @@ export function Catalog({ navigate, route }) {
   const q = params.get("q") || "";
   const category = params.get("category") || "";
   const [search, setSearch] = useState(q);
+  const [draftCategory, setDraftCategory] = useState(category);
   const [revision, setRevision] = useState(0);
   useEffect(() => setSearch(q), [q]);
+  useEffect(() => setDraftCategory(category), [category]);
   const state = useData(
     `/products?q=${encodeURIComponent(q)}&category=${encodeURIComponent(category)}&r=${revision}`,
   );
   function apply(event) {
     event.preventDefault();
     navigate(
-      `/products?${new URLSearchParams({ q: search, category }).toString()}`,
+      `/products?${new URLSearchParams({ q: search.trim(), category: draftCategory }).toString()}`,
     );
   }
   return (
-    <div className="container page">
-      <span className="eyebrow">PRODUCT CATALOG</span>
-      <h1>Explore our products</h1>
-      <p className="page-lead">
-        Technical product pages appear here once published by the team.
-      </p>
-      <form className="filter-bar" onSubmit={apply}>
+    <div className="container page catalog-page">
+      <div className="catalog-intro">
+        <div>
+          <span className="eyebrow">PRODUCT CATALOG</span>
+          <h1>Explore our products</h1>
+          <p className="page-lead">
+            Search approved product information or send a requirement for an
+            unlisted grade.
+          </p>
+        </div>
+        <Link to="/buy" navigate={navigate} className="button">
+          Request a quotation <span aria-hidden="true">↗</span>
+        </Link>
+      </div>
+      <form className="filter-bar" onSubmit={apply} role="search">
         <label>
           Search products
           <input
@@ -149,12 +285,8 @@ export function Catalog({ navigate, route }) {
         <label>
           Category
           <select
-            value={category}
-            onChange={(event) =>
-              navigate(
-                `/products?${new URLSearchParams({ q: search, category: event.target.value }).toString()}`,
-              )
-            }
+            value={draftCategory}
+            onChange={(event) => setDraftCategory(event.target.value)}
           >
             <option value="">All categories</option>
             <option>Base Oils</option>
@@ -166,14 +298,64 @@ export function Catalog({ navigate, route }) {
           </select>
         </label>
         <button className="button" type="submit">
-          Search
+          Apply filters
         </button>
+        {(q || category) && (
+          <button
+            className="ghost-button"
+            type="button"
+            onClick={() => navigate("/products")}
+          >
+            Clear
+          </button>
+        )}
       </form>
-      <DataState
-        state={state}
-        empty="No published products match these filters. Try another category or contact the team with your requirement."
-        retry={() => setRevision((value) => value + 1)}
-      />
+      {!state.loading && !state.error && (
+        <p className="results-summary" role="status">
+          {state.data?.length || 0} published{" "}
+          {state.data?.length === 1 ? "product" : "products"} found
+        </p>
+      )}
+      {(state.loading || state.error) && (
+        <DataState
+          state={state}
+          retry={() => setRevision((value) => value + 1)}
+        />
+      )}
+      {!state.loading && !state.error && !state.data?.length && (
+        <div className="catalog-empty">
+          <div>
+            <h2>
+              {q || category
+                ? "No matching products"
+                : "Catalog pages are being prepared"}
+            </h2>
+            <p>
+              {q || category
+                ? "Try a broader search, or tell the team exactly which grade you need."
+                : "You can still submit the product and quantity you need for review."}
+            </p>
+          </div>
+          <div className="empty-actions">
+            {(q || category) && (
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={() => navigate("/products")}
+              >
+                Clear filters
+              </button>
+            )}
+            <Link
+              to={`/buy?product_text=${encodeURIComponent(q)}`}
+              navigate={navigate}
+              className="button"
+            >
+              Send a requirement
+            </Link>
+          </div>
+        </div>
+      )}
       {state.data?.length > 0 && (
         <div className="product-grid">
           {state.data.map((item) => (
@@ -346,7 +528,7 @@ export function InquiryForm({ kind, navigate, route }) {
     email: "",
     product_id: params.get("product_id") || "",
     lot_id: params.get("lot_id") || "",
-    product_text: "",
+    product_text: (params.get("product_text") || "").slice(0, 160),
     quantity: "",
     unit: "MT",
     destination_country: "",
@@ -471,7 +653,16 @@ export function InquiryForm({ kind, navigate, route }) {
               <select
                 name="product_id"
                 value={form.product_id}
-                onChange={update}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    product_id: event.target.value,
+                    lot_id: "",
+                    product_text: event.target.value
+                      ? ""
+                      : current.product_text,
+                  }))
+                }
               >
                 <option value="">Other product / not listed</option>
                 {products.data?.map((item) => (
@@ -482,6 +673,23 @@ export function InquiryForm({ kind, navigate, route }) {
                 ))}
               </select>
             </label>
+          )}
+          {kind === "buy" && form.lot_id && (
+            <div className="selected-stock" role="status">
+              <span>
+                Published stock entry selected. Availability will be confirmed
+                when the team reviews your request.
+              </span>
+              <button
+                type="button"
+                className="inline-button"
+                onClick={() =>
+                  setForm((current) => ({ ...current, lot_id: "" }))
+                }
+              >
+                Remove stock selection
+              </button>
+            </div>
           )}
           {kind === "buy" && !form.product_id && (
             <label>
