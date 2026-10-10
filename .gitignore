@@ -26,6 +26,5 @@ dist/
 data/
 backups/
 ops-state/
-ui-images
 backend/.wheelhouse-ai-linux/*.whl
 
