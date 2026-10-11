@@ -3,6 +3,14 @@ import { api, Link } from "./shared";
 import { PortalDraft } from "./portalDraft";
 import { PortalAccount, PortalDocuments } from "./portalTools";
 import { PortalShipments } from "./phase3";
+import { Icon, StatusTag } from "./design-system";
+
+const portalIcons = {
+  requests: "file",
+  quotes: "quotation",
+  tracking: "truck",
+  account: "users",
+};
 
 export function Portal({ navigate }) {
   const [session, setSession] = useState(null);
@@ -337,6 +345,7 @@ export function Portal({ navigate }) {
               aria-current={portalView === id ? "page" : undefined}
               onClick={() => openPortalView(id)}
             >
+              <Icon name={portalIcons[id]} size={21} />
               {label}
             </button>
           ))}
@@ -383,7 +392,7 @@ export function Portal({ navigate }) {
                         </small>
                       </div>
                       <span>{item.product_text || "Published product"}</span>
-                      <strong>{item.status.replaceAll("_", " ")}</strong>
+                      <StatusTag value={item.status} />
                       <span>
                         {item.quantity} {item.unit}
                       </span>
@@ -456,7 +465,7 @@ export function Portal({ navigate }) {
                         key={quote.id}
                         onClick={() => openQuote(quote.id)}
                       >
-                        <span>{quote.status.toUpperCase()}</span>
+                        <StatusTag value={quote.status} />
                         <b>{quote.reference}</b>
                         <small>
                           {quote.currency} {quote.total} · valid until{" "}

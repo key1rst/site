@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { api, SectionHead } from "./shared";
+import { StatusTag } from "./design-system";
 
 export function InquiryOperations({ session, inquiry, onChanged, onOpen }) {
   const [details, setDetails] = useState(null);
@@ -121,7 +122,7 @@ export function InquiryOperations({ session, inquiry, onChanged, onOpen }) {
               }
             />
           </label>
-          <button className="ghost-button" disabled={busy}>
+          <button className="button button-blue" disabled={busy}>
             {busy ? "Saving…" : "Save ownership and action"}
           </button>
         </form>
@@ -308,7 +309,7 @@ export function OperationsReports({ session, refreshKey, onOpen }) {
                       {report.quote_values.map((row) => (
                         <tr key={`${row.currency}-${row.status}`}>
                           <td>{row.currency}</td>
-                          <td>{row.status}</td>
+                          <td><StatusTag value={row.status} /></td>
                           <td>{row.count}</td>
                           <td>{row.total}</td>
                         </tr>

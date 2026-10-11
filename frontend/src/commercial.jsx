@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { api, SectionHead } from "./shared";
+import { StatusTag } from "./design-system";
 
 const emptyQuote = () => ({
   inquiry_id: "",
@@ -184,8 +185,8 @@ export function QuoteWorkbench({ session }) {
               }
               onClick={() => openQuote(quote.id)}
             >
-              <span>
-                {quote.status.toUpperCase()} · v{quote.current_version}
+              <span className="inbox-meta">
+                <StatusTag value={quote.status} /> v{quote.current_version}
               </span>
               <b>{quote.company_name}</b>
               <small>{quote.reference}</small>
@@ -424,7 +425,7 @@ export function QuoteWorkbench({ session }) {
                   onChange={(event) => setField("terms", event.target.value)}
                 />
               </label>
-              <button className="button" disabled={busy}>
+              <button className="button button-blue" disabled={busy}>
                 {busy
                   ? "Saving…"
                   : current?.state === "issued"
@@ -730,7 +731,7 @@ export function CompanyAccess({ session }) {
               className="inbox-item"
               onClick={() => openCompany(company)}
             >
-              <span>{company.verification_status.toUpperCase()}</span>
+              <StatusTag value={company.verification_status} />
               <b>{company.name}</b>
               <small>{company.contact_email}</small>
             </button>
@@ -935,7 +936,7 @@ export function CompanyAccess({ session }) {
                       onChange={(event) => setReviewReason(event.target.value)}
                     />
                   </label>
-                  <button className="ghost-button">Save review</button>
+                  <button className="button button-blue">Save review</button>
                 </form>
               )}
               <button

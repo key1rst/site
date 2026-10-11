@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { demoCompany } from "./mockData";
+import { Icon } from "./design-system";
 
 export async function api(path, options = {}) {
   const response = await fetch(`/api${path}`, {
@@ -65,15 +66,21 @@ export function Link({ to, navigate, children, ...props }) {
 function BrandLogo({ footer = false }) {
   return (
     <span className={footer ? "brand-lockup footer-lockup" : "brand-lockup"}>
-      <svg className="brand-symbol" viewBox="0 0 40 48" aria-hidden="true">
+      <svg className="brand-symbol" viewBox="0 0 48 58" aria-hidden="true">
+        <defs>
+          <linearGradient id="brand-flame" x1="0" x2="1" y1="1" y2="0">
+            <stop offset="0" stopColor="#F59E0B" />
+            <stop offset="0.55" stopColor="#FFCB47" />
+            <stop offset="1" stopColor="#F59E0B" />
+          </linearGradient>
+        </defs>
         <path
-          d="M20 2C15 12 5 24 5 33a15 15 0 0 0 30 0C35 24 25 12 20 2Z"
-          fill="currentColor"
+          d="M25 2C21 12 7 27 5 38c-2 11 6 19 19 19s21-8 19-19C41 27 29 12 25 2Z"
+          fill="url(#brand-flame)"
         />
         <path
-          d="M21 11C18 22 11 27 11 34c0 5 4 9 9 9-3-4-3-8-1-12 2-5 5-11 2-20Z"
-          fill="#fff"
-          opacity=".86"
+          d="M24 13c3 11-5 18-8 27-2 7 1 12 7 13-2-4 0-9 4-14 5-7 2-16-3-26Z"
+          fill="#0B2D5B"
         />
       </svg>
       <span className="brand-words">
@@ -205,6 +212,14 @@ export function Shell({ navigate, route, children }) {
               aria-current={current("/contact")}
             >
               Contact
+            </Link>
+            <Link
+              to="/products"
+              navigate={go}
+              className="nav-search"
+              aria-label="Search products"
+            >
+              <Icon name="search" size={19} />
             </Link>
           </nav>
           <Link to="/buy" navigate={navigate} className="button button-small">

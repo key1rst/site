@@ -4,6 +4,17 @@ import { QuoteWorkbench, CompanyAccess } from "./commercial";
 import { InquiryOperations, OperationsReports } from "./operations";
 import { ShipmentWorkbench } from "./phase3";
 import { IntegrationWorkbench } from "./integrations";
+import { Icon, StatusTag } from "./design-system";
+
+const workspaceIcons = {
+  inbox: "file",
+  quotes: "quotation",
+  shipments: "truck",
+  reports: "chart",
+  companies: "users",
+  integrations: "settings",
+  catalog: "database",
+};
 
 const stages = {
   buy: [
@@ -307,6 +318,7 @@ export function Staff({ navigate }) {
               className={view === id ? "active" : ""}
               onClick={() => openView(id)}
             >
+              <Icon name={workspaceIcons[id]} size={21} />
               {label}
             </button>
           ))}
@@ -447,8 +459,8 @@ export function Staff({ navigate }) {
                           : "inbox-item"
                       }
                     >
-                      <span>
-                        {item.kind.toUpperCase()} · {item.status}
+                      <span className="inbox-meta">
+                        {item.kind.toUpperCase()} <StatusTag value={item.status} />
                       </span>
                       <b>{item.company_name}</b>
                       <small>
@@ -476,7 +488,7 @@ export function Staff({ navigate }) {
                       </div>
                       <div>
                         <dt>Status</dt>
-                        <dd>{selected.status}</dd>
+                        <dd><StatusTag value={selected.status} /></dd>
                       </div>
                       <div>
                         <dt>Product</dt>
@@ -542,7 +554,7 @@ export function Staff({ navigate }) {
                           placeholder="Add context or a reason for lost/rejected"
                         />
                       </label>
-                      <button className="button" disabled={busy}>
+                      <button className="button button-blue" disabled={busy}>
                         {busy ? "Saving…" : "Save follow-up"}
                       </button>
                     </form>

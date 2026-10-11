@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "./shared";
+import { Icon } from "./design-system";
 import heroImage from "./assets/mock-hero.png";
 import drumImage from "./assets/mock-drum.png";
 import logisticsImage from "./assets/mock-logistics.png";
@@ -18,97 +19,6 @@ import {
   demoSpecs,
   demoTeam,
 } from "./mockData";
-
-function Icon({ name, size = 24 }) {
-  const paths = {
-    shield: (
-      <>
-        <path d="M12 2 20 5v6c0 5-3.4 8.7-8 11-4.6-2.3-8-6-8-11V5l8-3Z" />
-        <path d="m8.5 12 2.4 2.4 4.7-5" />
-      </>
-    ),
-    globe: (
-      <>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M3 12h18M12 3c-3 3-4 6-4 9s1 6 4 9M12 3c3 3 4 6 4 9s-1 6-4 9" />
-      </>
-    ),
-    package: (
-      <>
-        <path d="M3 7 12 3l9 4v10l-9 4-9-4V7ZM3 7l9 4 9-4M12 11v10" />
-      </>
-    ),
-    clock: (
-      <>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 6v6l4 2" />
-      </>
-    ),
-    headset: (
-      <>
-        <path d="M3 13v-2a9 9 0 0 1 18 0v2M3 13h3v6H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM21 13h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2ZM18 19c0 2-2 3-6 3" />
-      </>
-    ),
-    truck: (
-      <>
-        <path d="M2 6h12v11H2zM14 10h4l4 4v3h-8z" />
-        <circle cx="6" cy="18" r="2" />
-        <circle cx="18" cy="18" r="2" />
-      </>
-    ),
-    file: (
-      <>
-        <path d="M6 2h8l5 5v15H6V2ZM14 2v6h5M9 12h7M9 16h7" />
-      </>
-    ),
-    diamond: (
-      <>
-        <path d="M7 3h10l5 6-10 12L2 9l5-6ZM2 9h20M7 3l-2 6 7 12 7-12-2-6" />
-      </>
-    ),
-    target: (
-      <>
-        <circle cx="12" cy="12" r="9" />
-        <circle cx="12" cy="12" r="5" />
-        <circle cx="12" cy="12" r="1" />
-        <path d="M12 12 21 3" />
-      </>
-    ),
-    pin: (
-      <>
-        <path d="M12 22s7-7 7-13a7 7 0 1 0-14 0c0 6 7 13 7 13Z" />
-        <circle cx="12" cy="9" r="2" />
-      </>
-    ),
-    flask: (
-      <>
-        <path d="M9 2h6M10 2v7L4 19a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3L14 9V2M7 16h10" />
-      </>
-    ),
-    gear: (
-      <>
-        <circle cx="12" cy="12" r="3" />
-        <path d="m10 2-.5 2-2 1-2-.8-2 3 1.5 1.5-.2 2.3L3 12l1 4 2-.1 1.5 1.5L7 20l4 2 1-2 2-1 2 .8 2-3-1.5-1.5.2-2.3L21 12l-1-4-2 .1-1.5-1.5L17 4l-4-2-1 2-2-2Z" />
-      </>
-    ),
-  };
-  return (
-    <svg
-      className="mx-icon"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {paths[name] || paths.package}
-    </svg>
-  );
-}
 
 function Arrow() {
   return <span aria-hidden="true">→</span>;
@@ -292,7 +202,7 @@ function Hero({ mode, navigate, children, search, onSearch }) {
           {children}
           {search && (
             <form className="mx-hero-search" onSubmit={onSearch}>
-              <span aria-hidden="true">⌕</span>
+              <Icon name="search" size={19} />
               <input
                 aria-label="Search products"
                 value={search.value}
@@ -375,7 +285,7 @@ export function MockHome({ navigate }) {
             navigate(`/products?q=${encodeURIComponent(search.trim())}`);
           }}
         >
-          <span aria-hidden="true">⌕</span>
+          <Icon name="search" size={19} />
           <input
             aria-label="Search products"
             value={search}

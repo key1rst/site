@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { api, SectionHead } from "./shared";
+import { StatusTag } from "./design-system";
 
 const statuses = [
   "planned",
@@ -452,9 +453,8 @@ export function IntegrationWorkbench({ session }) {
                       key={job.id}
                       onClick={() => openJob(job.id)}
                     >
-                      <span>
-                        {job.status.replaceAll("_", " ").toUpperCase()} ·
-                        reconciliation {job.reconciliation_status}
+                      <span className="inbox-meta">
+                        <StatusTag value={job.status} /> · reconciliation {job.reconciliation_status}
                       </span>
                       <b>
                         {job.shipment_reference} · v{job.shipment_version}

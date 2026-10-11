@@ -3,7 +3,7 @@
 ## Working assumptions
 
 - Launch as one company's B2B product catalog with public stock and inquiry flows, plus private staff and client areas.
-- The four screenshots in `ui-images/` define the current public-page visual demo. PETROVEX and the depicted company, product, stock, team, office, certification, and technical information are sample content only.
+- `Industrial Oils Trading Design System.png` defines the shared visual tokens and component treatment. The four screenshots in `ui-images/` remain page-composition references for the public demo. PETROVEX and the depicted company, product, stock, team, office, certification, and technical information are sample content only.
 - Keep the mock catalog and company facts isolated in `frontend/src/mockData.js` until approved content and API integration replace them. Public inquiry forms still submit to FastAPI.
 
 ## Core screens
@@ -17,13 +17,15 @@
 | Company and contact | Verify the seller and get in touch | Approved company details and real contact routes |
 | Staff and client areas | Follow up on commercial activity | Sign-in, inquiry and quotation workflows, shipment information |
 
-## Visual direction from `ui-images/`
+## Shared design system
 
-- White header, deep navy industrial photography, amber actions, generous spacing, and serif display headings.
-- Image-led category and product cards with clear labels, grades, and actions.
-- Keep headings, product information, stock, buttons, and forms as HTML so they remain responsive and accessible.
-- Mobile navigation, catalog filters, and inquiry forms must remain usable at narrow widths.
-- Show the PETROVEX name and mock business details for this preview only; the footer identifies the site as a demo.
+- `frontend/src/design-system.css` applies the PNG palette to public pages, the portals, and CRM: navy `#0B2D5B`, blue `#2563EB`, amber `#F59E0B`, success `#10B981`, error `#EF4444`, neutral `#6B7280`, background `#EFF6FF`, light blue `#DBEAFE`, muted `#F3F4F6`, border `#E5E7EB`, and text `#1F2937`.
+- Inter is the shared typeface. The body scale is 16/24, with headings at 36/44, 28/36, 20/28, and 18/26; smaller text uses 14/20 and 12/16. A system-font fallback keeps the interface readable if the web font is unavailable.
+- The public header uses dark navy with an amber quotation action. Public search uses a navy utility action. The blue action variant is used for saved CRM changes; blue outlines are used for secondary actions. Disabled actions have an explicit neutral state.
+- `frontend/src/design-system.jsx` provides the reusable line icons and status tags used by public content and signed-in navigation. Four alert treatments are available: information, success, warning, and error.
+- Cards, tables, inputs, navigation, status tags, and spacing use shared tokens. Main desktop content has a 1440px maximum width and a 24px grid gap; mobile layouts use 16px page gutters. Dense tables scroll within their container.
+- Image-led category and product cards retain the public page compositions from `ui-images/`. Headings, product information, stock, buttons, and forms remain HTML so they can adapt responsively and support keyboard access.
+- The PETROVEX name and mock business details remain preview content; the footer identifies the site as a demo. The PNG's generic company title is a design reference, not a verified company identity.
 
 ## Implemented visual assets
 

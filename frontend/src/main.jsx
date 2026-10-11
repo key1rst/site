@@ -17,6 +17,7 @@ import "./styles.css";
 import "./experience.css";
 import "./reference-theme.css";
 import "./mock-public.css";
+import "./design-system.css";
 
 function App() {
   const [route, navigate] = useRoute();

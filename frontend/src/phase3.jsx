@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { api, SectionHead } from "./shared";
+import { StatusTag } from "./design-system";
 
 const freshShipment = {
   quote_id: "",
@@ -207,8 +208,8 @@ export function ShipmentWorkbench({ session }) {
               className={`inbox-item ${selected?.id === row.id ? "active" : ""}`}
               onClick={() => open(row.id)}
             >
-              <span>
-                {row.status.replaceAll("_", " ").toUpperCase()} · v{row.version}
+              <span className="inbox-meta">
+                <StatusTag value={row.status} /> v{row.version}
               </span>
               <b>{row.reference}</b>
               <small>
@@ -522,7 +523,7 @@ export function PortalShipments({ session }) {
         rows.map((row) => (
           <div className="inquiry-detail" key={row.id}>
             <h3>
-              {row.reference} · {row.status.replaceAll("_", " ")}
+              {row.reference} · <StatusTag value={row.status} />
             </h3>
             <p>
               {row.carrier} · {row.tracking_reference}
@@ -536,7 +537,7 @@ export function PortalShipments({ session }) {
             <div className="history">
               {row.events.map((item, index) => (
                 <p key={index}>
-                  <b>{item.status.replaceAll("_", " ")}</b> ·{" "}
+                  <StatusTag value={item.status} /> ·{" "}
                   {new Date(item.occurred_at).toLocaleString()}
                   {item.customer_note && <span>{item.customer_note}</span>}
                 </p>
