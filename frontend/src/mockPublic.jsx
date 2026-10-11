@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "./shared";
 import { Icon } from "./design-system";
+import { formatNumber } from "./locale-format";
 import heroImage from "./assets/mock-hero.png";
 import drumImage from "./assets/mock-drum.png";
 import logisticsImage from "./assets/mock-logistics.png";
@@ -21,7 +22,7 @@ import {
 } from "./mockData";
 
 function Arrow() {
-  return <span aria-hidden="true">→</span>;
+  return <span className="mx-arrow" aria-hidden="true">→</span>;
 }
 function SectionTitle({ title, subtitle, link, linkText, navigate }) {
   return (
@@ -167,7 +168,7 @@ function StockTable({ navigate, short = false }) {
               </td>
               <td>{product.grade}</td>
               <td>{product.origin}</td>
-              <td>{product.quantity.toLocaleString()} MT</td>
+              <td>{formatNumber(product.quantity)} MT</td>
               <td>{product.packing}</td>
               <td>
                 <Status value={product.status} />
@@ -466,7 +467,7 @@ function CatalogCard({ product, navigate }) {
         </div>
         <div>
           <dt>Available</dt>
-          <dd>{product.quantity.toLocaleString()} MT</dd>
+          <dd>{formatNumber(product.quantity)} MT</dd>
         </div>
         <div>
           <dt>Packing</dt>
@@ -563,10 +564,10 @@ export function MockCatalog({ navigate, route }) {
                 onChange={(e) => setFilter(key, e.target.value)}
               >
                 <option value="">
-                  All{" "}
-                  {key === "status"
-                    ? "Availability"
-                    : key[0].toUpperCase() + key.slice(1) + "s"}
+                  {`All ${key === "status" ? "Availability" : {
+                    category: "Categories", grade: "Grades", origin: "Origins",
+                    packing: "Packings", application: "Applications",
+                  }[key]}`}
                 </option>
                 {options.map((option) => (
                   <option key={option}>{option}</option>
@@ -635,8 +636,7 @@ export function MockCatalog({ navigate, route }) {
             <h2>Product Listings</h2>
             <div>
               <span role="status">
-                Showing {filtered.length ? `1–${filtered.length}` : "0"} of{" "}
-                {filtered.length} products
+                {`Showing ${filtered.length ? `1–${filtered.length}` : "0"} of ${filtered.length} products`}
               </span>
               <label>
                 Sort by{" "}
@@ -709,7 +709,7 @@ export function MockCatalog({ navigate, route }) {
                         <td>{product.category}</td>
                         <td>{product.grade}</td>
                         <td>{product.origin}</td>
-                        <td>{product.quantity.toLocaleString()} MT</td>
+                        <td>{formatNumber(product.quantity)} MT</td>
                         <td>{product.packing}</td>
                         <td>
                           <Link

@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from "react";
-import heroImage from "./assets/industrial-harbor.png";
-import baseOilsImage from "./assets/base-oils.png";
-import lubricantsImage from "./assets/industrial-lubricants.png";
-import greasesImage from "./assets/greases.png";
-import processOilsImage from "./assets/process-oils.png";
+import heroImage from "./assets/industrial-harbor.webp";
+import heroImageMobile from "./assets/industrial-harbor-mobile.webp";
+import baseOilsImage from "./assets/base-oils.webp";
+import processOilsImage from "./assets/process-oils.webp";
 import { consumeQuoteDraft } from "./quoteDraft";
 import { api, Link, SectionHead, useData, DataState } from "./shared";
+import { formatDate } from "./locale-format";
+import { useLocale } from "./localization-runtime";
+import { companyProfile } from "./companyProfile";
 
 const familyCards = [
+  {
+    label: "Bitumen",
+    category: "Bitumen",
+    image: heroImageMobile,
+    description: "Industrial and road bitumen inquiries.",
+  },
   {
     label: "Base oils",
     category: "Base Oils",
@@ -15,27 +23,33 @@ const familyCards = [
     description: "Published base oil grades and product information.",
   },
   {
-    label: "Industrial lubricants",
-    category: "Industrial Lubricants",
-    image: lubricantsImage,
-    description: "Lubricants for industrial applications.",
-  },
-  {
-    label: "Greases",
-    category: "Greases",
-    image: greasesImage,
-    description: "Available grease products and grades.",
-  },
-  {
-    label: "Process oils",
-    category: "Process Oils",
+    label: "Petroleum products",
+    category: "Petroleum Products",
     image: processOilsImage,
-    description: "Process oil specifications and availability.",
+    description: "Petroleum derivatives and related materials.",
+  },
+  {
+    label: "Industrial solvents",
+    category: "Industrial Solvents",
+    image: processOilsImage,
+    description: "Industrial solvent requirements.",
+  },
+  {
+    label: "Petrochemical feedstocks",
+    category: "Petrochemical Feedstocks",
+    image: heroImageMobile,
+    description: "Raw materials for petrochemical applications.",
   },
 ];
 
 function categoryImage(category) {
   return familyCards.find((item) => item.category === category)?.image || null;
+}
+
+function imageDimensions(image) {
+  return image === heroImageMobile
+    ? { width: 960, height: 384 }
+    : { width: 1200, height: 800 };
 }
 
 function ProductCard({ item, navigate }) {
@@ -50,6 +64,7 @@ function ProductCard({ item, navigate }) {
           <img
             src={categoryImage(item.category)}
             alt=""
+            {...imageDimensions(categoryImage(item.category))}
             loading="lazy"
             decoding="async"
           />
@@ -79,24 +94,36 @@ function ProductCard({ item, navigate }) {
 }
 
 export function Home({ navigate }) {
+  const persian = useLocale() === "fa";
   const [query, setQuery] = useState("");
   const published = useData("/products");
   const stock = useData("/stock");
   return (
     <>
       <section className="home-hero">
-        <img className="home-hero-background" src={heroImage} alt="" />
+        <img
+          className="home-hero-background"
+          src={heroImageMobile}
+          srcSet={`${heroImageMobile} 960w, ${heroImage} 1983w`}
+          sizes="100vw"
+          width="1983"
+          height="793"
+          fetchPriority="high"
+          alt=""
+        />
         <div className="container home-hero-grid">
           <div className="home-hero-copy">
-            <span className="eyebrow">
-              INDUSTRIAL OILS · DIRECT COMPANY SUPPLY
+            <span className="eyebrow" data-no-translate>
+              {persian ? "قیر · فرآورده‌های نفتی · پتروشیمی" : "BITUMEN · PETROLEUM · PETROCHEMICALS"}
             </span>
             <h1>
-              <em>Base oils</em> & industrial lubricants
+              <em data-no-translate>{persian ? "محصولات صنعتی" : "Industrial materials"}</em>{" "}
+              <span data-no-translate>{persian ? "برای تجارت داخلی و بین‌المللی" : "for regional and international trade"}</span>
             </h1>
-            <p>
-              Explore approved product information, review published stock, and
-              send a purchasing requirement directly to the company.
+            <p data-no-translate lang={persian ? "fa" : "en"}>
+              {persian
+                ? "پادنا سیوان در زمینه قیر، فرآورده‌های نفتی، روغن‌های پایه، حلال‌های صنعتی و محصولات پتروشیمی فعالیت می‌کند. فهرست محصولات تأییدشده را ببینید یا درخواست خود را مستقیم برای شرکت بفرستید."
+                : "Padna Sivan works across bitumen, petroleum products, base oils, industrial solvents, and petrochemical materials. Explore approved listings or send a requirement directly to the company."}
             </p>
             <form
               className="home-search"
@@ -118,7 +145,7 @@ export function Home({ navigate }) {
                   placeholder="Name, grade or application"
                 />
                 <button type="submit" className="button">
-                  Search
+                  <span data-no-translate>{persian ? "جست‌وجو" : "Search"}</span>
                 </button>
               </div>
             </form>
@@ -185,7 +212,13 @@ export function Home({ navigate }) {
               navigate={navigate}
               className="family-link"
             >
-              <img src={family.image} alt="" loading="lazy" decoding="async" />
+              <img
+                src={family.image}
+                alt=""
+                {...imageDimensions(family.image)}
+                loading="lazy"
+                decoding="async"
+              />
               <span className="family-link-body">
                 <strong>
                   {family.label} <span aria-hidden="true">→</span>
@@ -231,7 +264,7 @@ export function Home({ navigate }) {
                     <b>{lot.name}</b>
                     <small>
                       {lot.grade || "Grade on request"} · Updated{" "}
-                      {new Date(lot.updated_at).toLocaleDateString()}
+                      {formatDate(lot.updated_at)}
                     </small>
                   </span>
                   <span>
@@ -357,11 +390,10 @@ export function Catalog({ navigate, route }) {
           >
             <option value="">All categories</option>
             <option>Base Oils</option>
-            <option>Industrial Lubricants</option>
-            <option>Greases</option>
-            <option>Process Oils</option>
-            <option>White Oil</option>
-            <option>Antifreeze</option>
+            <option>Bitumen</option>
+            <option>Petroleum Products</option>
+            <option>Industrial Solvents</option>
+            <option>Petrochemical Feedstocks</option>
           </select>
         </label>
         <button className="button" type="submit">
@@ -468,7 +500,11 @@ export function ProductDetail({ slug, navigate }) {
         <div>
           {categoryImage(product.category) && (
             <figure className="product-visual">
-              <img src={categoryImage(product.category)} alt="" />
+              <img
+                src={categoryImage(product.category)}
+                alt=""
+                {...imageDimensions(categoryImage(product.category))}
+              />
               <figcaption>
                 Illustrative {product.category.toLowerCase()} image
               </figcaption>
@@ -568,7 +604,7 @@ export function ProductDetail({ slug, navigate }) {
               <div>
                 <b>{lot.origin || "Origin on request"}</b>
                 <small>
-                  Updated {new Date(lot.updated_at).toLocaleDateString()}
+                  Updated {formatDate(lot.updated_at)}
                 </small>
               </div>
               <span>{lot.packing || "Packing on request"}</span>
@@ -622,7 +658,7 @@ export function Stock({ navigate }) {
                 <b>{lot.name}</b>
                 <small>
                   {lot.grade || "Grade on request"} · Updated{" "}
-                  {new Date(lot.updated_at).toLocaleDateString()}
+                  {formatDate(lot.updated_at)}
                 </small>
               </div>
               <span>
@@ -1009,20 +1045,33 @@ export function InquiryForm({ kind, navigate, route }) {
 }
 
 export function About({ navigate }) {
+  const locale = useLocale();
+  const persian = locale === "fa";
   return (
     <div className="container page about-page">
       <div className="about-intro">
         <span className="eyebrow">ABOUT THE COMPANY</span>
-        <h1>Industrial trade, presented clearly.</h1>
-        <p className="page-lead">
-          Explore published products and stock, or speak with the team about a
-          specific requirement. Verified company history, locations, and team
-          profiles will appear here after approval.
+        <h1 data-no-translate lang={persian ? "fa" : "en"}>
+          {persian ? companyProfile.nameFa : companyProfile.name}
+        </h1>
+        <p className="page-lead" data-no-translate lang={persian ? "fa" : "en"}>
+          {persian ? companyProfile.summaryFa : companyProfile.summary}
         </p>
-        <Link to="/buy" navigate={navigate} className="button">
-          Request a quote <span aria-hidden="true">→</span>
-        </Link>
       </div>
+      <section className="about-company-profile" aria-label="Company profile">
+        <h2>{persian ? "حوزه فعالیت" : "Products and operations"}</h2>
+        <p data-no-translate lang={persian ? "fa" : "en"}>
+          {persian ? companyProfile.scopeFa : companyProfile.scope}
+        </p>
+        <h2>{persian ? "همکاری تجاری" : "Commercial partnerships"}</h2>
+        <p data-no-translate lang={persian ? "fa" : "en"}>
+          {persian ? companyProfile.approachFa : companyProfile.approach}
+        </p>
+        <h2>{persian ? "اهداف راهبردی" : "Strategic priorities"}</h2>
+        <p data-no-translate lang={persian ? "fa" : "en"}>
+          {persian ? companyProfile.prioritiesFa : companyProfile.priorities}
+        </p>
+      </section>
       <div className="about-grid">
         <section>
           <span>01 / PRODUCTS</span>
@@ -1057,6 +1106,14 @@ export function About({ navigate }) {
             Offer supply →
           </Link>
         </section>
+      </div>
+      <div className="context-cta">
+        <p>{persian
+          ? "نام‌های ثبت‌شده در سوابق عمومی شرکت را ببینید. سمت‌های فعلی پس از تأیید شرکت نمایش داده می‌شوند."
+          : "See names in the public company record. Current roles await confirmation."}</p>
+        <Link to="/team" navigate={navigate}>
+          {persian ? "افراد و سمت‌ها" : "People and positions"} →
+        </Link>
       </div>
       <div className="context-cta">
         <p>Need product information now?</p>

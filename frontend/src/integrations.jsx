@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { api, SectionHead } from "./shared";
 import { StatusTag } from "./design-system";
+import { formatDate } from "./locale-format";
 
 const statuses = [
   "planned",
@@ -618,7 +619,7 @@ export function IntegrationWorkbench({ session }) {
                 {history.map((row, index) => (
                   <p key={index}>
                     {row.action.replaceAll("_", " ")} · {row.actor}
-                    <small>{new Date(row.created_at).toLocaleString()}</small>
+                    <small>{formatDate(row.created_at, true)}</small>
                     {row.detail}
                   </p>
                 ))}

@@ -1,0 +1,65 @@
+@import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap");
+
+.site-header nav .language-toggle {
+  align-self: center;
+  flex: none;
+  min-height: 34px;
+  padding: 5px 9px;
+  border: 1px solid #91abd0;
+  border-radius: 6px;
+  background: transparent;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.site-header nav .language-toggle:hover { background: #ffffff18; }
+.site-header nav .language-toggle:focus-visible { outline-color: #f59e0b; }
+
+html[lang="fa"] body,
+html[lang="fa"] button,
+html[lang="fa"] input,
+html[lang="fa"] select,
+html[lang="fa"] textarea,
+html[lang="fa"] h1,
+html[lang="fa"] h2,
+html[lang="fa"] h3,
+html[lang="fa"] h4,
+html[lang="fa"] .brand-words strong,
+html[lang="fa"] .metric-grid b {
+  font-family: Vazirmatn, Tahoma, "Segoe UI", sans-serif;
+}
+html[dir="rtl"] body { text-align: right; }
+html[dir="rtl"] .mx-hero::before {
+  background: linear-gradient(270deg, rgb(11 45 91 / 93%), rgb(11 45 91 / 73%) 55%, rgb(11 45 91 / 24%));
+}
+html[dir="rtl"] .mx-hero-content,
+html[dir="rtl"] .mx-section-title,
+html[dir="rtl"] .mx-catalog-card,
+html[dir="rtl"] .mx-detail-quote,
+html[dir="rtl"] .mx-filter-sidebar,
+html[dir="rtl"] .portal-section,
+html[dir="rtl"] .inquiry-detail { text-align: right; }
+html[dir="rtl"] .mx-table th,
+html[dir="rtl"] .table-scroll th { text-align: right; }
+html[dir="rtl"] .mx-hero-search .ds-icon { margin-left: 0; margin-right: 4px; }
+html[dir="rtl"] .inbox-item.active { box-shadow: inset -4px 0 0 var(--ds-secondary); }
+html[dir="rtl"] .notice { padding: 14px 48px 14px 18px; }
+html[dir="rtl"] .notice::before { left: auto; right: 17px; }
+html[dir="rtl"] .mx-breadcrumb,
+html[dir="rtl"] .mx-table-action,
+html[dir="rtl"] .mx-text-link { direction: rtl; }
+html[dir="rtl"] .reference,
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="url"],
+html[dir="rtl"] input[type="tel"],
+html[dir="rtl"] input[type="number"] { direction: ltr; text-align: left; }
+html[dir="rtl"] .reference { unicode-bidi: isolate; }
+html[dir="rtl"] .mx-arrow,
+html[dir="rtl"] .direction-arrow { display: inline-block; transform: rotate(180deg); }
+html[dir="rtl"] .site-header nav .language-toggle { font-family: Inter, Vazirmatn, Tahoma, sans-serif; }
+
+@media (max-width: 1080px) {
+  .site-header nav .language-toggle { align-self: stretch; text-align: start; padding: 10px 12px; }
+}

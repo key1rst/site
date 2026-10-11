@@ -62,6 +62,15 @@ async function run() {
     });
     await command("Page.enable");
     await command("Runtime.enable");
+    if (process.env.DESIGN_REVIEW_LOCALE) {
+      const reviewLocale = process.env.DESIGN_REVIEW_LOCALE;
+      if (!["en", "fa"].includes(reviewLocale)) throw new Error("DESIGN_REVIEW_LOCALE must be en or fa");
+      await command("Page.navigate", { url: origin });
+      await pause(400);
+      await command("Runtime.evaluate", {
+        expression: `localStorage.setItem('oil-platform-language', ${JSON.stringify(reviewLocale)})`,
+      });
+    }
     if (process.env.DESIGN_REVIEW_STAFF_EMAIL && process.env.DESIGN_REVIEW_STAFF_PASSWORD) {
       await command("Page.navigate", { url: `${origin}/staff` });
       await pause(500);
@@ -106,10 +115,28 @@ async function run() {
       for (const route of routes) {
         await command("Page.navigate", { url: `${origin}${route}` });
         await pause(900);
+        if (route === "/staff" && process.env.DESIGN_REVIEW_STAFF_VIEW) {
+          const reviewView = process.env.DESIGN_REVIEW_STAFF_VIEW;
+          if (!/^[a-z]+$/.test(reviewView)) throw new Error("Invalid review view");
+          await command("Runtime.evaluate", {
+            expression: `document.querySelector('.workspace-nav [data-view=${JSON.stringify(reviewView)}]')?.click()`,
+          });
+          await pause(900);
+        }
+        if (route === "/staff" && process.env.DESIGN_REVIEW_OPEN_FIRST_INQUIRY) {
+          await command("Runtime.evaluate", {
+            expression: `document.querySelector('.inbox-list .inbox-item')?.click()`,
+          });
+          await pause(900);
+        }
         const result = await command("Runtime.evaluate", {
           expression: `(() => ({
             width: window.innerWidth,
             scrollWidth: document.documentElement.scrollWidth,
+            lang: document.documentElement.lang,
+            dir: document.documentElement.dir,
+            urlLang: new URLSearchParams(location.search).get('lang'),
+            linkedLocale: document.querySelector('#primary-navigation a[href^="/products"]')?.getAttribute('href')?.includes('lang=fa') || false,
             title: document.querySelector('h1')?.textContent?.trim() || '',
             font: getComputedStyle(document.body).fontFamily,
             header: getComputedStyle(document.querySelector('.site-header')).backgroundColor,
@@ -118,11 +145,71 @@ async function run() {
               .filter((node) => node.getBoundingClientRect().right > window.innerWidth + 1)
               .slice(0, 12)
               .map((node) => ({ tag: node.tagName, className: typeof node.className === 'string' ? node.className : '', right: Math.round(node.getBoundingClientRect().right) })),
-            errorText: document.querySelector('[role="alert"]')?.textContent?.trim() || ''
+            errorText: document.querySelector('[role="alert"]')?.textContent?.trim() || '',
+            englishText: ${process.env.DESIGN_REVIEW_AUDIT_TRANSLATIONS ? `(() => {
+              const walker = document.createTreeWalker(document.querySelector('#root'), NodeFilter.SHOW_TEXT);
+              const results = [];
+              while (walker.nextNode()) {
+                if (walker.currentNode.parentElement?.closest('[hidden]')) continue;
+                const value = walker.currentNode.nodeValue.trim();
+                if (/[A-Za-z]{3}/.test(value) && value.length < 220) results.push(value);
+              }
+              return [...new Set(results)].slice(0, 120);
+            })()` : `[]`}
           }))()`,
           returnByValue: true,
         });
         const metrics = result.result.value;
+        if (route === "/staff" && process.env.DESIGN_REVIEW_AUDIT_VIEWS) {
+          const reviewViews = process.env.DESIGN_REVIEW_AUDIT_VIEWS.split(",");
+          if (reviewViews.some((view) => !/^[a-z]+$/.test(view))) throw new Error("Invalid review views");
+          const viewAudit = await command("Runtime.evaluate", {
+            expression: `(async () => {
+              const output = [];
+              for (const view of ${JSON.stringify(reviewViews)}) {
+                document.querySelector('.workspace-nav [data-view="' + view + '"]')?.click();
+                await new Promise((done) => setTimeout(done, 900));
+                const walker = document.createTreeWalker(document.querySelector('.workspace-content'), NodeFilter.SHOW_TEXT);
+                const values = [];
+                while (walker.nextNode()) {
+                  if (walker.currentNode.parentElement?.closest('[hidden]')) continue;
+                  const value = walker.currentNode.nodeValue.trim();
+                  if (/[A-Za-z]{3}/.test(value) && value.length < 220) values.push(value);
+                }
+                output.push({ view, englishText: [...new Set(values)].slice(0, 140) });
+              }
+              return output;
+            })()`,
+            awaitPromise: true,
+            returnByValue: true,
+          });
+          metrics.staffViews = viewAudit.result.value;
+        }
+        if (route === "/portal" && process.env.DESIGN_REVIEW_AUDIT_PORTAL_VIEWS) {
+          const reviewViews = process.env.DESIGN_REVIEW_AUDIT_PORTAL_VIEWS.split(",");
+          if (reviewViews.some((view) => !/^[a-z]+$/.test(view))) throw new Error("Invalid portal review views");
+          const viewAudit = await command("Runtime.evaluate", {
+            expression: `(async () => {
+              const output = [];
+              for (const view of ${JSON.stringify(reviewViews)}) {
+                document.querySelector('.workspace-nav [data-view="' + view + '"]')?.click();
+                await new Promise((done) => setTimeout(done, 900));
+                const walker = document.createTreeWalker(document.querySelector('.workspace-content'), NodeFilter.SHOW_TEXT);
+                const values = [];
+                while (walker.nextNode()) {
+                  if (walker.currentNode.parentElement?.closest('[hidden]')) continue;
+                  const value = walker.currentNode.nodeValue.trim();
+                  if (/[A-Za-z]{3}/.test(value) && value.length < 220) values.push(value);
+                }
+                output.push({ view, englishText: [...new Set(values)].slice(0, 140) });
+              }
+              return output;
+            })()`,
+            awaitPromise: true,
+            returnByValue: true,
+          });
+          metrics.portalViews = viewAudit.result.value;
+        }
         const pageName = route === "/" ? "home" : route.replace(/^\/+/, "").replace(/[^a-z0-9]+/gi, "-");
         const file = join(outputDir, `${pageName}-${viewport.width}.png`);
         const screenshot = await command("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
@@ -146,7 +233,31 @@ async function run() {
                 filterOpens = filter.getAttribute('aria-expanded') === 'true' &&
                   document.querySelector('.mx-filter-sidebar').classList.contains('is-open');
               }
-              return { menuOpens, filterOpens };
+              let catalogValuePreserved = null;
+              if (location.pathname === '/products') {
+                const category = document.querySelector('.mx-filter-ribbon select');
+                catalogValuePreserved = [...category.options].some((option) => option.value === 'Base Oils');
+              }
+              let unitValuePreserved = null;
+              if (location.pathname === '/buy' || location.pathname === '/sell') {
+                const units = document.querySelector('select[name="unit"]');
+                unitValuePreserved = [...units.options].some((option) => option.value === 'MT') &&
+                  [...units.options].some((option) => option.value === 'Barrel');
+              }
+              let languageSwitches = null;
+              if (${Boolean(process.env.DESIGN_REVIEW_LOCALE)}) {
+                const toggle = document.querySelector('.language-toggle');
+                const before = document.documentElement.lang;
+                toggle.click();
+                await wait();
+                const changed = document.documentElement.lang !== before &&
+                  new URLSearchParams(location.search).get('lang') !== before;
+                toggle.click();
+                await wait();
+                languageSwitches = changed && document.documentElement.lang === before &&
+                  new URLSearchParams(location.search).get('lang') === (before === 'fa' ? 'fa' : null);
+              }
+              return { menuOpens, filterOpens, catalogValuePreserved, unitValuePreserved, languageSwitches };
             })()`,
             awaitPromise: true,
             returnByValue: true,
@@ -158,7 +269,7 @@ async function run() {
       }
     }
     console.log(JSON.stringify(findings, null, 2));
-    if (findings.some((item) => item.overflow || item.errorText || item.menuOpens === false || item.filterOpens === false)) process.exitCode = 1;
+    if (findings.some((item) => item.overflow || item.errorText || item.menuOpens === false || item.filterOpens === false || item.catalogValuePreserved === false || item.unitValuePreserved === false || item.languageSwitches === false || (process.env.DESIGN_REVIEW_LOCALE && item.lang !== process.env.DESIGN_REVIEW_LOCALE) || (process.env.DESIGN_REVIEW_LOCALE === "fa" && (item.urlLang !== "fa" || !item.linkedLocale)))) process.exitCode = 1;
   } finally {
     socket?.close();
     chrome.kill();

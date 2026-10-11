@@ -75,9 +75,9 @@ export function PortalAccount({ session, navigate }) {
       {profile && (
         <form className="quote-form" onSubmit={saveProfile}>
           <p>
-            {profile.company_name} · {profile.email} · company{" "}
-            {profile.verification_status}. Contact staff through your inquiry
-            messages for company or email changes.
+            {profile.company_name} · {profile.email} · <span>Company status:</span>{" "}
+            {profile.verification_status}.{" "}
+            <span>Contact staff through your inquiry messages for company or email changes.</span>
           </p>
           <label>
             Contact name

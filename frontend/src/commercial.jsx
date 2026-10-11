@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { api, SectionHead } from "./shared";
 import { StatusTag } from "./design-system";
+import { formatDate } from "./locale-format";
 
 const emptyQuote = () => ({
   inquiry_id: "",
@@ -585,7 +586,7 @@ export function QuoteWorkbench({ session }) {
                   <p key={index}>
                     <b>{event.action.replaceAll("_", " ")}</b> ·{" "}
                     {event.actor_type}
-                    <small>{new Date(event.created_at).toLocaleString()}</small>
+                    <small>{formatDate(event.created_at, true)}</small>
                     {event.detail && <span>{event.detail}</span>}
                   </p>
                 ))}
@@ -802,7 +803,7 @@ export function CompanyAccess({ session }) {
                   <b>One-time token for {invite.email}</b>
                   <code className="token">{invite.token}</code>
                   <small>
-                    Expires {new Date(invite.expires_at).toLocaleString()}.
+                    Expires {formatDate(invite.expires_at, true)}.
                     {invite.recovery
                       ? "Use the portal Reset password tab. Prior sessions are revoked after recovery."
                       : "Transfer securely; this token grants account activation."}
@@ -957,7 +958,7 @@ export function CompanyAccess({ session }) {
                       {event.old_status} → {event.new_status} · {event.reason}
                       <small>
                         {event.actor} ·{" "}
-                        {new Date(event.created_at).toLocaleString()}
+                        {formatDate(event.created_at, true)}
                       </small>
                     </p>
                   ))}
@@ -969,7 +970,7 @@ export function CompanyAccess({ session }) {
                       {event.new_hold ? "on" : "off"} · {event.reason}
                       <small>
                         {event.actor} ·{" "}
-                        {new Date(event.created_at).toLocaleString()}
+                        {formatDate(event.created_at, true)}
                       </small>
                     </p>
                   ))}
@@ -979,7 +980,7 @@ export function CompanyAccess({ session }) {
                       {event.action.replaceAll("_", " ")} · {event.actor_type} ·{" "}
                       {event.detail}
                       <small>
-                        {new Date(event.created_at).toLocaleString()}
+                        {formatDate(event.created_at, true)}
                       </small>
                     </p>
                   ))}

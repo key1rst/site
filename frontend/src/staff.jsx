@@ -5,6 +5,7 @@ import { InquiryOperations, OperationsReports } from "./operations";
 import { ShipmentWorkbench } from "./phase3";
 import { IntegrationWorkbench } from "./integrations";
 import { Icon, StatusTag } from "./design-system";
+import { formatDate } from "./locale-format";
 
 const workspaceIcons = {
   inbox: "file",
@@ -313,6 +314,7 @@ export function Staff({ navigate }) {
           {workspaceViews.map(([id, label]) => (
             <button
               key={id}
+              data-view={id}
               type="button"
               aria-current={view === id ? "page" : undefined}
               className={view === id ? "active" : ""}
@@ -465,7 +467,7 @@ export function Staff({ navigate }) {
                       <b>{item.company_name}</b>
                       <small>
                         {item.reference} ·{" "}
-                        {new Date(item.created_at).toLocaleDateString()}
+                        {formatDate(item.created_at)}
                       </small>
                     </button>
                   ))
@@ -647,7 +649,7 @@ export function Staff({ navigate }) {
                           <p key={index}>
                             <b>{item.sender_type}</b>: {item.body}
                             <small>
-                              {new Date(item.created_at).toLocaleString()}
+                              {formatDate(item.created_at, true)}
                             </small>
                           </p>
                         ))
@@ -676,7 +678,7 @@ export function Staff({ navigate }) {
                         <p key={index}>
                           <b>{item.action.replace("_", " ")}</b> {item.detail}
                           <small>
-                            {new Date(item.created_at).toLocaleString()}
+                            {formatDate(item.created_at, true)}
                           </small>
                         </p>
                       ))}
@@ -684,7 +686,7 @@ export function Staff({ navigate }) {
                         <p key={`n${index}`}>
                           <b>{item.author}</b>: {item.body}
                           <small>
-                            {new Date(item.created_at).toLocaleString()}
+                            {formatDate(item.created_at, true)}
                           </small>
                         </p>
                       ))}

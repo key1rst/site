@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { demoCompany } from "./mockData";
+import { companyProfile } from "./companyProfile";
 import { Icon } from "./design-system";
+import { getLocale, localizePath, setLocale, syncLocaleFromUrl } from "./localization-runtime";
 
 export async function api(path, options = {}) {
   const response = await fetch(`/api${path}`, {
@@ -27,23 +28,27 @@ export function useRoute() {
     window.location.pathname + window.location.search,
   );
   useEffect(() => {
-    const update = () =>
+    const update = () => {
+      syncLocaleFromUrl();
       setRoute(window.location.pathname + window.location.search);
+    };
     window.addEventListener("popstate", update);
     return () => window.removeEventListener("popstate", update);
   }, []);
   function navigate(to, options = {}) {
-    window.history.pushState({}, "", to);
-    setRoute(to);
+    const target = localizePath(to, getLocale());
+    window.history.pushState({}, "", target);
+    setRoute(target);
     if (!options.preserveScroll) window.scrollTo(0, 0);
   }
   return [route, navigate];
 }
 
 export function Link({ to, navigate, children, ...props }) {
+  const href = localizePath(to, getLocale());
   return (
     <a
-      href={to}
+      href={href}
       {...props}
       onClick={(event) => {
         if (
@@ -54,7 +59,7 @@ export function Link({ to, navigate, children, ...props }) {
           !event.altKey
         ) {
           event.preventDefault();
-          navigate(to);
+          navigate(href);
         }
       }}
     >
@@ -63,35 +68,18 @@ export function Link({ to, navigate, children, ...props }) {
   );
 }
 
-function BrandLogo({ footer = false }) {
+function BrandLogo({ footer = false, locale = "en" }) {
   return (
     <span className={footer ? "brand-lockup footer-lockup" : "brand-lockup"}>
-      <svg className="brand-symbol" viewBox="0 0 48 58" aria-hidden="true">
-        <defs>
-          <linearGradient id="brand-flame" x1="0" x2="1" y1="1" y2="0">
-            <stop offset="0" stopColor="#F59E0B" />
-            <stop offset="0.55" stopColor="#FFCB47" />
-            <stop offset="1" stopColor="#F59E0B" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M25 2C21 12 7 27 5 38c-2 11 6 19 19 19s21-8 19-19C41 27 29 12 25 2Z"
-          fill="url(#brand-flame)"
-        />
-        <path
-          d="M24 13c3 11-5 18-8 27-2 7 1 12 7 13-2-4 0-9 4-14 5-7 2-16-3-26Z"
-          fill="#0B2D5B"
-        />
-      </svg>
       <span className="brand-words">
-        <strong>PETROVEX</strong>
-        <small>GLOBAL ENERGY SOLUTIONS</small>
+        <strong data-no-translate lang={locale}>{locale === "fa" ? companyProfile.nameFa : companyProfile.name}</strong>
+        <small data-no-translate lang={locale === "fa" ? "en" : "fa"}>{locale === "fa" ? companyProfile.name : companyProfile.nameFa}</small>
       </span>
     </span>
   );
 }
 
-export function Shell({ navigate, route, children }) {
+export function Shell({ navigate, route, locale, children }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const path = route.split("?")[0];
   const go = (to) => {
@@ -106,19 +94,19 @@ export function Shell({ navigate, route, children }) {
     path === "/products"
       ? {
           title: "Need a Custom Quantity or Specific Grade?",
-          text: "Get a fast, competitive quote from our team of experts.",
+          text: "Send your product, quantity, and destination for review.",
           links: [["Request a Quote", "/buy"]],
         }
       : path.startsWith("/products/")
         ? {
-            title: "Ready to Secure Your Base Oil Supply?",
-            text: "Get competitive pricing, reliable delivery and expert support from PETROVEX.",
+            title: "Need a quotation for this product?",
+            text: "Share the grade, quantity, and destination for a reviewed quotation.",
             links: [["Request a Quote", "/buy"]],
           }
         : path === "/about"
           ? {
-              title: "Let's Build a Stronger, More Efficient Tomorrow",
-              text: "Partner with PETROVEX for reliable supply, assured quality and global delivery.",
+              title: "Discuss your requirements with us",
+              text: "Discuss a purchasing requirement or a private offer with the company.",
               links: [
                 ["Request a Quote", "/buy"],
                 ["Contact Our Sales Team", "/contact"],
@@ -126,7 +114,7 @@ export function Shell({ navigate, route, children }) {
             }
           : {
               title: "Ready to Discuss Your Requirements?",
-              text: "Get a fast, competitive quote from our team of experts.",
+              text: "Send a purchase requirement or contact the company directly through the inquiry form.",
               links: [
                 ["Request a Quote", "/buy"],
                 ["View Products", "/products"],
@@ -145,9 +133,9 @@ export function Shell({ navigate, route, children }) {
             to="/"
             navigate={go}
             className="brand"
-            aria-label="PETROVEX home"
+            aria-label="Padna Sivan home"
           >
-            <BrandLogo />
+            <BrandLogo locale={locale} />
           </Link>
           <button
             className="menu-toggle"
@@ -200,13 +188,6 @@ export function Shell({ navigate, route, children }) {
               About us
             </Link>
             <Link
-              to="/insights"
-              navigate={go}
-              aria-current={current("/insights")}
-            >
-              Knowledge Center
-            </Link>
-            <Link
               to="/contact"
               navigate={go}
               aria-current={current("/contact")}
@@ -221,9 +202,18 @@ export function Shell({ navigate, route, children }) {
             >
               <Icon name="search" size={19} />
             </Link>
+            <button
+              className="language-toggle"
+              type="button"
+              lang={locale === "fa" ? "en" : "fa"}
+              aria-label={locale === "fa" ? "Switch to English" : "تغییر زبان به فارسی"}
+              onClick={() => setLocale(locale === "fa" ? "en" : "fa")}
+            >
+              {locale === "fa" ? "English" : "فارسی"}
+            </button>
           </nav>
           <Link to="/buy" navigate={navigate} className="button button-small">
-            Request a Quote <span aria-hidden="true">→</span>
+            Request a Quote <span className="direction-arrow" aria-hidden="true">→</span>
           </Link>
         </div>
       </header>
@@ -232,7 +222,7 @@ export function Shell({ navigate, route, children }) {
         <section className="footer-cta" aria-label="Commercial inquiry">
           <div className="container footer-cta-inner">
             <div>
-              <span>GLOBAL SUPPLY. TRUSTED PARTNER.</span>
+              <span>INDUSTRIAL MATERIALS · DIRECT COMPANY INQUIRIES</span>
               <h2>{cta.title}</h2>
               <p>{cta.text}</p>
             </div>
@@ -244,7 +234,7 @@ export function Shell({ navigate, route, children }) {
                   navigate={navigate}
                   className={index ? "mx-footer-cta-outline" : "button"}
                 >
-                  {label} <span aria-hidden="true">→</span>
+                  {label} <span className="direction-arrow" aria-hidden="true">→</span>
                 </Link>
               ))}
             </div>
@@ -254,8 +244,8 @@ export function Shell({ navigate, route, children }) {
       <footer className="site-footer">
         <div className="container footer-inner mx-footer-grid">
           <div className="mx-footer-brand">
-            <BrandLogo footer />
-            <p>Base oils and industrial lubricants for global markets.</p>
+            <BrandLogo footer locale={locale} />
+            <p>Bitumen, petroleum products, base oils, industrial solvents, and petrochemical materials.</p>
           </div>
           <div className="mx-footer-column">
             <strong>Quick Links</strong>
@@ -287,29 +277,18 @@ export function Shell({ navigate, route, children }) {
               Base Oils
             </Link>
             <Link
-              to="/products?category=Industrial%20Lubricants"
+              to="/products?category=Bitumen"
               navigate={navigate}
             >
-              Industrial Lubricants
+              Bitumen
             </Link>
-            <Link to="/products?category=Greases" navigate={navigate}>
-              Greases
-            </Link>
-            <Link
-              to="/products?category=Related%20Products"
-              navigate={navigate}
-            >
-              Related Products
-            </Link>
-            <Link to="/insights" navigate={navigate}>
-              Knowledge Center
+            <Link to="/products?category=Industrial%20Solvents" navigate={navigate}>
+              Industrial Solvents
             </Link>
           </div>
           <div className="mx-footer-column">
             <strong>Contact Us</strong>
-            <span>{demoCompany.offices[0].phone}</span>
-            <span>{demoCompany.offices[0].email}</span>
-            <span>Dubai, UAE</span>
+            <span>Use the inquiry form to reach the appropriate team.</span>
             <Link to="/contact" navigate={navigate}>
               Contact our team →
             </Link>
@@ -322,20 +301,12 @@ export function Shell({ navigate, route, children }) {
             <Link to="/portal" navigate={navigate}>
               Client portal
             </Link>
-            <span>Social profiles pending</span>
           </div>
-          <small>
-            Demo preview: company, product, stock, team, office, certification,
-            and technical details are placeholders. Industry visuals are
-            illustrative.
-          </small>
+          <small>Company profile supplied by the project owner. Product and stock entries appear only when approved in the CRM. Industry visuals are illustrative.</small>
         </div>
         <div className="mx-footer-legal">
           <div className="container">
-            © 2026 PETROVEX demo. All rights reserved.
-            <span>
-              Demo content is illustrative and not approved for publication.
-            </span>
+            © {new Date().getFullYear()} {companyProfile.name}.
           </div>
         </div>
       </footer>

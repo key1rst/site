@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { api, SectionHead } from "./shared";
 import { StatusTag } from "./design-system";
+import { formatDate } from "./locale-format";
 
 const freshShipment = {
   quote_id: "",
@@ -473,7 +474,7 @@ export function ShipmentWorkbench({ session }) {
                       {item.new_status}
                     </b>
                     <small>
-                      {new Date(item.occurred_at).toLocaleString()} · recorded
+                      {formatDate(item.occurred_at, true)} · recorded
                       by {item.actor}
                     </small>
                     {item.evidence_reference && (
@@ -538,7 +539,7 @@ export function PortalShipments({ session }) {
               {row.events.map((item, index) => (
                 <p key={index}>
                   <StatusTag value={item.status} /> ·{" "}
-                  {new Date(item.occurred_at).toLocaleString()}
+                  {formatDate(item.occurred_at, true)}
                   {item.customer_note && <span>{item.customer_note}</span>}
                 </p>
               ))}

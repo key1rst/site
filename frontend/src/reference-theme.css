@@ -410,7 +410,7 @@ h3,
   min-height: 238px;
   margin: 0;
   padding: 45px max(32px, calc((100vw - 1280px) / 2));
-  background: #071e3b url("./assets/industrial-harbor.png") center 42% / cover;
+  background: #071e3b url("./assets/industrial-harbor.webp") center 42% / cover;
   color: #fff;
 }
 .catalog-intro::before,
@@ -498,7 +498,7 @@ h3,
   overflow: hidden;
   padding: 40px 42px;
   border-radius: 5px;
-  background: #071e3b url("./assets/industrial-harbor.png") center 42% / cover;
+  background: #071e3b url("./assets/industrial-harbor.webp") center 42% / cover;
   color: #fff;
 }
 .product-intro .back-link {
@@ -586,6 +586,22 @@ h3,
 .about-intro .button {
   margin-top: 21px;
 }
+.about-company-profile {
+  max-width: 920px;
+  margin: 42px auto 34px;
+  padding-inline: 4px;
+}
+.about-company-profile h2 {
+  margin: 26px 0 8px;
+  color: #092b52;
+  font-size: clamp(20px, 2vw, 25px);
+}
+.about-company-profile p {
+  margin: 0;
+  color: #435c70;
+  font-size: 16px;
+  line-height: 1.8;
+}
 .about-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -621,6 +637,68 @@ h3,
 .about-page > .context-cta {
   margin-bottom: 60px;
 }
+.record-people-page {
+  max-width: 1120px;
+}
+.record-people-page > .eyebrow {
+  color: #a86e13;
+}
+.record-people-page > .page-lead {
+  max-width: 780px;
+}
+.record-people-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 34px 0 18px;
+}
+.record-person {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f7f9fb;
+}
+.record-person-mark {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 50%;
+  background: #dbe8f5;
+  color: #0b2d5b;
+  font-size: 25px;
+  font-weight: 700;
+}
+.record-person h2 {
+  margin: 0 0 6px;
+  color: #092b52;
+  font-size: 22px;
+}
+.record-person p,
+.record-source {
+  margin: 0;
+  color: #52697e;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.record-source a {
+  color: #925e12;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-width: 720px) {
+  .record-people-grid {
+    grid-template-columns: 1fr;
+  }
+  .record-person {
+    padding: 18px;
+  }
+}
 
 /* Form and private work areas share color and control treatment. */
 .form-page .inquiry-form fieldset,
@@ -653,7 +731,7 @@ h3,
 .footer-cta {
   position: relative;
   isolation: isolate;
-  background: #061d38 url("./assets/industrial-harbor.png") center 56% / cover;
+  background: #061d38 url("./assets/industrial-harbor.webp") center 56% / cover;
   color: #fff;
 }
 .footer-cta::before {
@@ -859,5 +937,14 @@ h3,
   }
   .footer-cta .button {
     margin-top: 18px;
+  }
+}
+@media (max-width: 720px) {
+  .catalog-intro,
+  .product-intro,
+  .stock-intro,
+  .about-intro,
+  .footer-cta {
+    background-image: url("./assets/industrial-harbor-mobile.webp");
   }
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { api, SectionHead } from "./shared";
 import { StatusTag } from "./design-system";
+import { formatDate } from "./locale-format";
 
 export function InquiryOperations({ session, inquiry, onChanged, onOpen }) {
   const [details, setDetails] = useState(null);
@@ -74,7 +75,7 @@ export function InquiryOperations({ session, inquiry, onChanged, onOpen }) {
         <form className="quote-form" onSubmit={save}>
           <p>
             Current stage: {Math.floor(details.days_in_stage)} days. Entered{" "}
-            {new Date(details.stage_entered_at).toLocaleString()}.
+            {formatDate(details.stage_entered_at, true)}.
           </p>
           <div className="form-grid">
             <label>

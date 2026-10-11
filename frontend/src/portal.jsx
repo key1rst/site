@@ -4,6 +4,7 @@ import { PortalDraft } from "./portalDraft";
 import { PortalAccount, PortalDocuments } from "./portalTools";
 import { PortalShipments } from "./phase3";
 import { Icon, StatusTag } from "./design-system";
+import { formatDate } from "./locale-format";
 
 const portalIcons = {
   requests: "file",
@@ -340,6 +341,7 @@ export function Portal({ navigate }) {
           ].map(([id, label]) => (
             <button
               key={id}
+              data-view={id}
               type="button"
               className={portalView === id ? "active" : ""}
               aria-current={portalView === id ? "page" : undefined}
@@ -388,7 +390,7 @@ export function Portal({ navigate }) {
                           {item.reference}
                         </button>
                         <small>
-                          {new Date(item.created_at).toLocaleDateString()}
+                          {formatDate(item.created_at)}
                         </small>
                       </div>
                       <span>{item.product_text || "Published product"}</span>
@@ -417,7 +419,7 @@ export function Portal({ navigate }) {
                         <p key={index}>
                           <b>{item.sender_type}</b>: {item.body}
                           <small>
-                            {new Date(item.created_at).toLocaleString()}
+                            {formatDate(item.created_at, true)}
                           </small>
                         </p>
                       ))

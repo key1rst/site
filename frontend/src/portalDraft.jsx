@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { api } from "./shared";
+import { formatDate } from "./locale-format";
 
 const empty = {
   product_text: "",
@@ -125,7 +126,7 @@ export function PortalDraft({ session, onSubmitted }) {
       </p>
       {expires && (
         <p className="muted">
-          Draft expires {new Date(expires).toLocaleDateString()}.
+          Draft expires {formatDate(expires)}.
         </p>
       )}
       {error && (
