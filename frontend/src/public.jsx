@@ -8,6 +8,7 @@ import { api, Link, SectionHead, useData, DataState } from "./shared";
 import { formatDate } from "./locale-format";
 import { useLocale } from "./localization-runtime";
 import { companyProfile } from "./companyProfile";
+import { productCategories } from "./productCategories";
 
 const familyCards = [
   {
@@ -93,11 +94,12 @@ function ProductCard({ item, navigate }) {
   );
 }
 
-export function Home({ navigate }) {
+export function Home({ navigate, DevHomePreview }) {
   const persian = useLocale() === "fa";
   const [query, setQuery] = useState("");
   const published = useData("/products");
   const stock = useData("/stock");
+  const showDemoHome = import.meta.env.DEV && !published.loading && !published.error && !published.data?.length;
   return (
     <>
       <section className="home-hero">
@@ -142,7 +144,7 @@ export function Home({ navigate }) {
                   type="search"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Name, grade or application"
+                  placeholder="Product or grade"
                 />
                 <button type="submit" className="button">
                   <span data-no-translate>{persian ? "جست‌وجو" : "Search"}</span>
@@ -156,9 +158,6 @@ export function Home({ navigate }) {
               <Link to="/buy" navigate={navigate} className="outline-button">
                 Request a quote <span aria-hidden="true">→</span>
               </Link>
-              <Link to="/sell" navigate={navigate} className="outline-button">
-                Sell to us <span aria-hidden="true">→</span>
-              </Link>
             </div>
           </div>
         </div>
@@ -168,26 +167,18 @@ export function Home({ navigate }) {
         className="container home-pathways"
         aria-label="Ways to work with us"
       >
-        <Link to="/products" navigate={navigate} className="pathway-card">
-          <span>01 / DISCOVER</span>
-          <strong>Browse products</strong>
-          <p>Review published grades, applications, and packaging.</p>
+        <Link to="/buy" navigate={navigate} className="pathway-card">
+          <span>Buy From Us</span>
+          <strong>Request a quote</strong>
+          <p>Customers can send a requirement without creating an account. The team reviews each submission.</p>
           <b>
-            Open catalog <span aria-hidden="true">→</span>
-          </b>
-        </Link>
-        <Link to="/stock" navigate={navigate} className="pathway-card">
-          <span>02 / AVAILABILITY</span>
-          <strong>Check stock</strong>
-          <p>See inventory the company has approved for public display.</p>
-          <b>
-            View stock <span aria-hidden="true">→</span>
+            Send a requirement <span aria-hidden="true">→</span>
           </b>
         </Link>
         <Link to="/sell" navigate={navigate} className="pathway-card">
-          <span>03 / PROCUREMENT</span>
+          <span>Sell To Us</span>
           <strong>Offer supply to us</strong>
-          <p>Submit a private supplier offer for procurement review.</p>
+          <p>Suppliers can submit products for procurement review. Offers do not appear in the public catalog.</p>
           <b>
             Submit an offer <span aria-hidden="true">→</span>
           </b>
@@ -228,6 +219,81 @@ export function Home({ navigate }) {
             </Link>
           ))}
         </div>
+        <nav className="home-family-more" aria-label="More product families">
+          <span>More product families</span>
+          {["Industrial Lubricants", "Greases", "Process Oils"].map((category) => (
+            <Link
+              key={category}
+              to={`/products?category=${encodeURIComponent(category)}`}
+              navigate={navigate}
+            >
+              {category} <span aria-hidden="true">→</span>
+            </Link>
+          ))}
+        </nav>
+      </section>
+      <section className="section container home-products">
+        <div className="section-heading-row">
+          <SectionHead
+            eyebrow={showDemoHome ? "DESIGN DEMO" : "PUBLISHED CATALOG"}
+            title={showDemoHome ? "Explore example products" : "Product pages"}
+            text={showDemoHome
+              ? "The previous catalog is available locally for design review."
+              : "Only approved product information appears here."}
+          />
+          <Link to="/products" navigate={navigate} className="section-link">
+            Browse catalog <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+        {published.loading ? (
+          <div className="notice" role="status">
+            Loading published products…
+          </div>
+        ) : published.error ? (
+          <div className="notice error" role="alert">
+            Product information is temporarily unavailable.{" "}
+            <Link to="/buy" navigate={navigate}>
+              Send your requirement
+            </Link>
+            .
+          </div>
+        ) : published.data?.length ? (
+          <div className="product-grid">
+            {published.data.slice(0, 3).map((item) => (
+              <ProductCard key={item.id} item={item} navigate={navigate} />
+            ))}
+          </div>
+        ) : showDemoHome && DevHomePreview ? (
+          <>
+            <p className="home-preview-note" role="note">
+              Demo products for local design review. Details and stock figures are illustrative and await company approval.
+            </p>
+            <React.Suspense fallback={<div className="notice" role="status">Loading example products…</div>}>
+              <DevHomePreview ProductCard={ProductCard} navigate={navigate} />
+            </React.Suspense>
+          </>
+        ) : showDemoHome ? (
+          <div className="empty-action">
+            <div>
+              <h3>Explore the previous demo catalog</h3>
+              <p>Illustrative product entries are available for local design review.</p>
+            </div>
+            <Link to="/products" navigate={navigate} className="ghost-button">Browse demo products</Link>
+          </div>
+        ) : (
+          <div className="empty-action">
+            <div>
+              <h3>Product pages are being prepared</h3>
+              <p>
+                Tell us the grade and quantity you need. The team can review
+                your request directly.
+              </p>
+            </div>
+            <Link to="/buy" navigate={navigate} className="ghost-button">
+              Send a requirement
+            </Link>
+          </div>
+        )}
       </section>
       <section className="section home-availability">
         <div className="container home-availability-grid">
@@ -292,50 +358,6 @@ export function Home({ navigate }) {
           </div>
         </div>
       </section>
-      <section className="section container home-products">
-        <div className="section-heading-row">
-          <SectionHead
-            eyebrow="PUBLISHED CATALOG"
-            title="Product pages"
-            text="Only approved product information appears here."
-          />
-          <Link to="/products" navigate={navigate} className="section-link">
-            Browse catalog <span aria-hidden="true">→</span>
-          </Link>
-        </div>
-        {published.loading ? (
-          <div className="notice" role="status">
-            Loading published products…
-          </div>
-        ) : published.error ? (
-          <div className="notice error" role="alert">
-            Product information is temporarily unavailable.{" "}
-            <Link to="/buy" navigate={navigate}>
-              Send your requirement
-            </Link>
-            .
-          </div>
-        ) : published.data?.length ? (
-          <div className="product-grid">
-            {published.data.slice(0, 3).map((item) => (
-              <ProductCard key={item.id} item={item} navigate={navigate} />
-            ))}
-          </div>
-        ) : (
-          <div className="empty-action">
-            <div>
-              <h3>Product pages are being prepared</h3>
-              <p>
-                Tell us the grade and quantity you need. The team can review
-                your request directly.
-              </p>
-            </div>
-            <Link to="/buy" navigate={navigate} className="ghost-button">
-              Send a requirement
-            </Link>
-          </div>
-        )}
-      </section>
     </>
   );
 }
@@ -389,11 +411,11 @@ export function Catalog({ navigate, route }) {
             onChange={(event) => setDraftCategory(event.target.value)}
           >
             <option value="">All categories</option>
-            <option>Base Oils</option>
-            <option>Bitumen</option>
-            <option>Petroleum Products</option>
-            <option>Industrial Solvents</option>
-            <option>Petrochemical Feedstocks</option>
+            {productCategories.map((productCategory) => (
+              <option key={productCategory} value={productCategory}>
+                {productCategory}
+              </option>
+            ))}
           </select>
         </label>
         <button className="button" type="submit">

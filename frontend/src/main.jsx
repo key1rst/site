@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from "react";
+import React, { Suspense, useLayoutEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { useRoute, Shell, Link } from "./shared";
 import { Home, Catalog, ProductDetail, Stock, InquiryForm, About } from "./public";
@@ -10,7 +10,35 @@ import "./styles.css";
 import "./experience.css";
 import "./reference-theme.css";
 import "./design-system.css";
+import "./home.css";
 import "./localization.css";
+
+const DevCatalog = import.meta.env.DEV
+  ? React.lazy(() =>
+      import("./mockPublic").then((module) => ({ default: module.MockCatalog })),
+    )
+  : null;
+const DevHomePreview = import.meta.env.DEV
+  ? React.lazy(() => import("./devHomePreview"))
+  : null;
+const DevProductDetail = import.meta.env.DEV
+  ? React.lazy(() =>
+      import("./mockPublic").then((module) => ({ default: module.MockProductDetail })),
+    )
+  : null;
+const DevStock = import.meta.env.DEV
+  ? React.lazy(() =>
+      import("./mockPublic").then((module) => ({ default: module.MockStock })),
+    )
+  : null;
+const demoProductSlugs = new Set([
+  "base-oil-sn150",
+  "base-oil-sn500",
+  "base-oil-sn600",
+  "bright-stock",
+  "hydraulic-oil-46",
+  "lithium-grease-ep2",
+]);
 
 function App() {
   useLayoutEffect(startLocalization, []);
@@ -18,17 +46,25 @@ function App() {
   const [route, navigate] = useRoute();
   const path = route.split("?")[0];
   let content;
-  if (path === "/") content = <Home navigate={navigate} />;
+  if (path === "/") content = <Home navigate={navigate} DevHomePreview={DevHomePreview} />;
   else if (path === "/products")
-    content = <Catalog navigate={navigate} route={route} />;
-  else if (path.startsWith("/products/"))
-    content = (
-      <ProductDetail
-        slug={decodeURIComponent(path.slice("/products/".length))}
-        navigate={navigate}
-      />
+    content = import.meta.env.DEV ? (
+      <DevCatalog navigate={navigate} route={route} />
+    ) : (
+      <Catalog navigate={navigate} route={route} />
     );
-  else if (path === "/stock") content = <Stock navigate={navigate} />;
+  else if (path.startsWith("/products/")) {
+    const slug = decodeURIComponent(path.slice("/products/".length));
+    content = import.meta.env.DEV && demoProductSlugs.has(slug) ? (
+      <DevProductDetail slug={slug} navigate={navigate} />
+    ) : (
+      <ProductDetail slug={slug} navigate={navigate} />
+    );
+  }
+  else if (path === "/stock")
+    content = import.meta.env.DEV
+      ? <DevStock navigate={navigate} />
+      : <Stock navigate={navigate} />;
   else if (path === "/buy")
     content = (
       <InquiryForm
@@ -87,7 +123,11 @@ function App() {
     );
   return (
     <Shell navigate={navigate} route={route} locale={locale}>
-      {content}
+      <Suspense
+        fallback={<div className="container page notice" role="status">Loading products…</div>}
+      >
+        {content}
+      </Suspense>
     </Shell>
   );
 }

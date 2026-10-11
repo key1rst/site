@@ -1,0 +1,275 @@
+/* Home page composition. Shared navigation and product primitives live elsewhere. */
+.home-hero-grid {
+  min-height: 0;
+}
+
+.home-hero-copy {
+  width: min(730px, 66%);
+  padding: 48px 0 54px;
+}
+
+.home-hero h1 {
+  font-size: clamp(38px, 3.8vw, 52px);
+  line-height: 1.12;
+}
+
+.home-hero-copy > p {
+  margin: 18px 0 22px;
+}
+
+html[dir="rtl"] .home-hero::after {
+  background: linear-gradient(
+    270deg,
+    rgba(3, 20, 42, 0.96) 0%,
+    rgba(3, 20, 42, 0.86) 42%,
+    rgba(3, 20, 42, 0.29) 73%,
+    rgba(3, 20, 42, 0.08) 100%
+  );
+}
+
+html[dir="rtl"] .home-hero a span[aria-hidden="true"],
+html[dir="rtl"] .home-pathways a span[aria-hidden="true"],
+html[dir="rtl"] .home-families a span[aria-hidden="true"],
+html[dir="rtl"] .home-products a span[aria-hidden="true"],
+html[dir="rtl"] .home-availability a span[aria-hidden="true"] {
+  display: inline-block;
+  transform: rotate(180deg);
+}
+
+.home-hero-links {
+  margin-top: 14px;
+  gap: 12px;
+}
+
+.home-hero-links .button,
+.home-hero-links .outline-button {
+  min-height: 46px;
+}
+
+.home-pathways {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding-top: 24px;
+  padding-bottom: 24px;
+}
+
+.pathway-card,
+.pathway-card:first-child {
+  padding: 22px 24px;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  background: #fff;
+  box-shadow: var(--ds-shadow);
+}
+
+.pathway-card strong {
+  margin-top: 8px;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+html[lang="fa"] .pathway-card strong,
+html[lang="fa"] .family-link-body strong {
+  font-family: Vazirmatn, Tahoma, "Segoe UI", sans-serif;
+}
+
+.pathway-card p {
+  max-width: 510px;
+  min-height: 42px;
+  margin: 8px 0 13px;
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.pathway-card b {
+  color: #865408;
+  font-size: 13px;
+}
+
+.pathway-card:hover,
+.pathway-card:focus-visible {
+  border-color: #d39a2a;
+}
+
+.home-families,
+.home-products {
+  padding-top: 48px;
+  padding-bottom: 52px;
+}
+
+.family-list {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.family-link img {
+  height: 112px;
+}
+
+.family-link-body strong {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 24px;
+  letter-spacing: -0.02em;
+}
+
+.family-link-body small {
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.home-family-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  margin-top: 19px;
+  padding-top: 17px;
+  border-top: 1px solid var(--ds-border);
+  font-size: 13px;
+}
+
+.home-family-more > span {
+  color: var(--ds-text-secondary);
+  font-weight: 700;
+}
+
+.home-family-more a {
+  color: var(--ds-primary);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: #b7c6d7;
+  text-underline-offset: 4px;
+}
+
+.home-family-more a:hover {
+  color: #865408;
+}
+
+.home-preview-note {
+  margin: 0 0 18px;
+  padding: 11px 14px;
+  border-inline-start: 3px solid var(--ds-accent);
+  background: #fff8e9;
+  color: #62420d;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.home-products .product-card {
+  min-height: 0;
+}
+
+.home-products .product-card-name {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 20px;
+  line-height: 27px;
+}
+
+@media (max-width: 1100px) {
+  .home-hero-copy {
+    width: min(670px, 78%);
+  }
+
+  .family-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  .home-hero-copy {
+    width: min(650px, 90%);
+  }
+
+  .home-pathways {
+    gap: 12px;
+  }
+
+  .pathway-card,
+  .pathway-card:first-child {
+    padding: 19px;
+  }
+
+  .family-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  html[dir="rtl"] .home-hero::after {
+    background: rgba(3, 20, 42, 0.85);
+  }
+
+  .home-hero-copy {
+    width: 100%;
+    padding: 38px 0 46px;
+  }
+
+  .home-hero h1 {
+    font-size: clamp(34px, 9vw, 42px);
+  }
+
+  .home-hero-copy > p {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .home-hero-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-hero-links .button {
+    grid-column: auto;
+  }
+
+  .home-hero-links .button,
+  .home-hero-links .outline-button {
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+
+  .home-pathways {
+    grid-template-columns: 1fr;
+  }
+
+  .pathway-card p {
+    min-height: 0;
+  }
+
+  .home-families,
+  .home-products {
+    padding-top: 39px;
+    padding-bottom: 43px;
+  }
+
+  .family-list {
+    grid-template-columns: 1fr;
+  }
+
+  .family-link {
+    display: grid;
+    grid-template-columns: 104px minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .family-link img {
+    width: 104px;
+    height: 100%;
+    min-height: 92px;
+  }
+
+  .family-link-body {
+    align-self: center;
+  }
+
+  .family-link-body strong {
+    font-size: 16px;
+  }
+
+  .family-link-body small {
+    font-size: 12px;
+  }
+}

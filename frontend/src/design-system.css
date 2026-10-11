@@ -455,3 +455,115 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* The public shell uses the same footer grid on every route. */
+.footer-cta-inner {
+  padding-block: 30px;
+}
+.footer-cta h2 {
+  font-size: 28px;
+  line-height: 36px;
+}
+.footer-cta p {
+  font-size: 14px;
+  line-height: 22px;
+}
+.mx-footer-cta-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.mx-footer-cta-actions > a {
+  min-height: 44px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.mx-footer-cta-actions > .mx-footer-cta-outline {
+  color: #fff;
+  border: 1px solid #a8bdd8;
+  border-radius: 6px;
+}
+.mx-footer-cta-actions > .mx-footer-cta-outline:hover {
+  background: #ffffff20;
+}
+.site-footer {
+  padding: 36px 0 0;
+}
+.site-footer .footer-inner.mx-footer-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+.site-footer .mx-footer-brand p {
+  margin-top: 14px;
+  color: #c9d8e9;
+  font-size: 14px;
+  line-height: 22px;
+}
+.site-footer .footer-inner.mx-footer-grid > .mx-footer-column {
+  display: grid;
+  gap: 9px;
+  justify-content: start;
+  max-width: none;
+  color: #d4e0ed;
+}
+.site-footer .mx-footer-column strong {
+  margin-bottom: 4px;
+  color: #fff;
+  font-size: 15px;
+  line-height: 22px;
+}
+.site-footer .mx-footer-column a,
+.site-footer .mx-footer-column span {
+  color: #d4e0ed;
+  font-size: 14px;
+  line-height: 20px;
+  text-decoration: none;
+}
+.site-footer .mx-footer-column a:hover {
+  color: #ffbd47;
+  text-decoration: underline;
+}
+.site-footer .mx-footer-grid > small {
+  color: #afc3d9;
+  font-size: 12px;
+  line-height: 18px;
+}
+.mx-footer-legal {
+  margin-top: 20px;
+  padding: 12px 0;
+  border-top: 1px solid #28415a;
+  color: #afc3d9;
+  font-size: 12px;
+}
+@media (max-width: 900px) {
+  .site-footer .footer-inner.mx-footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .site-footer .mx-footer-brand {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 720px) {
+  .footer-cta-inner {
+    display: block;
+    padding-block: 28px;
+  }
+  .footer-cta h2 {
+    font-size: 24px;
+    line-height: 32px;
+  }
+  .mx-footer-cta-actions {
+    justify-content: flex-start;
+    margin-top: 20px;
+  }
+  .site-footer .footer-inner.mx-footer-grid {
+    gap: 24px 18px;
+  }
+}

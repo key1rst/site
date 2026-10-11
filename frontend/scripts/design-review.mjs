@@ -9,12 +9,17 @@ const outputDir = resolve("../data/design-review");
 const profile = mkdtempSync(join(tmpdir(), "oil-design-review-"));
 const routeOption = process.argv.find((arg) => arg.startsWith("--routes="))?.slice(9);
 const widthOption = process.argv.find((arg) => arg.startsWith("--widths="))?.slice(9);
+const bottomReview = process.argv.includes("--bottom");
+const targetReview = process.argv.find((arg) => arg.startsWith("--target="))?.slice(9);
 const routes = (routeOption || "/,/products,/buy,/sell,/about,/stock,/staff,/portal").split(",");
-const viewports = [
-  { width: 390, height: 844 },
-  { width: 768, height: 1024 },
-  { width: 1280, height: 900 },
-].filter(({ width }) => !widthOption || widthOption.split(",").includes(String(width)));
+const widths = (widthOption || "390,768,1280").split(",").map(Number);
+if (widths.some((width) => !Number.isInteger(width) || width < 320 || width > 2560)) {
+  throw new Error("Review widths must be whole numbers from 320 to 2560");
+}
+const viewports = widths.map((width) => ({
+  width,
+  height: width < 600 ? 844 : width < 1024 ? 1024 : 900,
+}));
 const pause = (ms) => new Promise((resolvePause) => setTimeout(resolvePause, ms));
 
 async function waitForPort() {
@@ -211,7 +216,18 @@ async function run() {
           metrics.portalViews = viewAudit.result.value;
         }
         const pageName = route === "/" ? "home" : route.replace(/^\/+/, "").replace(/[^a-z0-9]+/gi, "-");
-        const file = join(outputDir, `${pageName}-${viewport.width}.png`);
+        if (bottomReview) {
+          await command("Runtime.evaluate", { expression: "document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, document.documentElement.scrollHeight)" });
+          await pause(150);
+        }
+        if (targetReview) {
+          await command("Runtime.evaluate", {
+            expression: `document.documentElement.style.scrollBehavior = 'auto'; document.querySelector(${JSON.stringify(targetReview)})?.scrollIntoView({ block: 'start', behavior: 'auto' })`,
+          });
+          await pause(150);
+        }
+        const targetSuffix = targetReview ? `-${targetReview.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "")}` : "";
+        const file = join(outputDir, `${pageName}-${viewport.width}${bottomReview ? "-bottom" : ""}${targetSuffix}.png`);
         const screenshot = await command("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
         writeFileSync(file, Buffer.from(screenshot.data, "base64"));
         if (viewport.width === 390) {
@@ -233,10 +249,20 @@ async function run() {
                 filterOpens = filter.getAttribute('aria-expanded') === 'true' &&
                   document.querySelector('.mx-filter-sidebar').classList.contains('is-open');
               }
-              let catalogValuePreserved = null;
+              let catalogFilterWorks = null;
               if (location.pathname === '/products') {
-                const category = document.querySelector('.mx-filter-ribbon select');
-                catalogValuePreserved = [...category.options].some((option) => option.value === 'Base Oils');
+                const categories = [...document.querySelectorAll('.mx-filter-sidebar fieldset:first-of-type label')];
+                const category = categories.find((label) => label.textContent.trim() === 'Base Oils')?.querySelector('input[type="checkbox"]');
+                if (category) {
+                  const initialParams = new URLSearchParams(location.search);
+                  category.click();
+                  await new Promise((done) => setTimeout(done, 100));
+                  const expectedCategory = initialParams.get('category') === 'Base Oils' ? null : 'Base Oils';
+                  catalogFilterWorks = new URLSearchParams(location.search).get('category') === expectedCategory &&
+                    (initialParams.size > 0 || document.querySelectorAll('.mx-catalog-card').length === 4);
+                } else {
+                  catalogFilterWorks = false;
+                }
               }
               let unitValuePreserved = null;
               if (location.pathname === '/buy' || location.pathname === '/sell') {
@@ -257,7 +283,7 @@ async function run() {
                 languageSwitches = changed && document.documentElement.lang === before &&
                   new URLSearchParams(location.search).get('lang') === (before === 'fa' ? 'fa' : null);
               }
-              return { menuOpens, filterOpens, catalogValuePreserved, unitValuePreserved, languageSwitches };
+              return { menuOpens, filterOpens, catalogFilterWorks, unitValuePreserved, languageSwitches };
             })()`,
             awaitPromise: true,
             returnByValue: true,
@@ -269,7 +295,7 @@ async function run() {
       }
     }
     console.log(JSON.stringify(findings, null, 2));
-    if (findings.some((item) => item.overflow || item.errorText || item.menuOpens === false || item.filterOpens === false || item.catalogValuePreserved === false || item.unitValuePreserved === false || item.languageSwitches === false || (process.env.DESIGN_REVIEW_LOCALE && item.lang !== process.env.DESIGN_REVIEW_LOCALE) || (process.env.DESIGN_REVIEW_LOCALE === "fa" && (item.urlLang !== "fa" || !item.linkedLocale)))) process.exitCode = 1;
+    if (findings.some((item) => item.overflow || item.errorText || item.menuOpens === false || item.filterOpens === false || item.catalogFilterWorks === false || item.unitValuePreserved === false || item.languageSwitches === false || (process.env.DESIGN_REVIEW_LOCALE && item.lang !== process.env.DESIGN_REVIEW_LOCALE) || (process.env.DESIGN_REVIEW_LOCALE === "fa" && (item.urlLang !== "fa" || !item.linkedLocale)))) process.exitCode = 1;
   } finally {
     socket?.close();
     chrome.kill();

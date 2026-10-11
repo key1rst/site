@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import "./mock-public.css";
 import { Link } from "./shared";
 import { Icon } from "./design-system";
 import { formatNumber } from "./locale-format";
@@ -147,46 +148,56 @@ function BenefitList({ compact = false }) {
 function StockTable({ navigate, short = false }) {
   const rows = short ? demoProducts.slice(0, 6) : demoProducts;
   return (
-    <div className="mx-table-scroll">
-      <table className="mx-table">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Grade</th>
-            <th>Origin</th>
-            <th>Quantity</th>
-            <th>Packing</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((product) => (
-            <tr key={product.slug}>
-              <td>
-                {product.category === "Base Oils" ? "Base Oil" : product.name}
-              </td>
-              <td>{product.grade}</td>
-              <td>{product.origin}</td>
-              <td>{formatNumber(product.quantity)} MT</td>
-              <td>{product.packing}</td>
-              <td>
-                <Status value={product.status} />
-              </td>
-              <td>
-                <Link
-                  className="mx-table-action"
-                  to={quoteUrl(product)}
-                  navigate={navigate}
-                >
-                  Enquire <Arrow />
-                </Link>
-              </td>
+    <>
+      <p className="mx-table-scroll-hint">
+        Scroll sideways to see quantity, status, and enquiry actions.
+      </p>
+      <div
+        className="mx-table-scroll"
+        role="region"
+        aria-label="Current stock table"
+        tabIndex={0}
+      >
+        <table className="mx-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Grade</th>
+              <th>Origin</th>
+              <th>Quantity</th>
+              <th>Packing</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {rows.map((product) => (
+              <tr key={product.slug}>
+                <td>
+                  {product.category === "Base Oils" ? "Base Oil" : product.name}
+                </td>
+                <td>{product.grade}</td>
+                <td>{product.origin}</td>
+                <td>{formatNumber(product.quantity)} MT</td>
+                <td>{product.packing}</td>
+                <td>
+                  <Status value={product.status} />
+                </td>
+                <td>
+                  <Link
+                    className="mx-table-action"
+                    to={quoteUrl(product)}
+                    navigate={navigate}
+                  >
+                    Enquire <Arrow />
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 
@@ -208,19 +219,11 @@ function Hero({ mode, navigate, children, search, onSearch }) {
                 aria-label="Search products"
                 value={search.value}
                 onChange={search.onChange}
-                placeholder="Search products, grades or specifications..."
+                placeholder="Product or grade"
               />
               <button type="submit">Search</button>
             </form>
           )}
-        </div>
-        <div className="mx-hero-side">
-          SUPPLYING
-          <br />
-          INDUSTRY
-          <br />
-          WORLDWIDE
-          <span />
         </div>
       </div>
     </section>
@@ -525,6 +528,9 @@ export function MockCatalog({ navigate, route }) {
   };
   return (
     <div className="mx-page mx-catalog">
+      <div className="mx-container mx-preview-warning" role="note">
+        Demo catalog: product details and stock figures are illustrative and await company approval.
+      </div>
       <Hero
         mode="catalog"
         navigate={navigate}
@@ -538,45 +544,9 @@ export function MockCatalog({ navigate, route }) {
         }}
       >
         <div className="mx-breadcrumb">Home › Products</div>
-        <h1>
-          Products & <em>Current Stock</em>
-        </h1>
-        <h2>
-          High-Quality Base Oils, Industrial Lubricants & Related Products
-        </h2>
-        <p>
-          Explore our wide range of base oils, industrial lubricants, greases
-          and specialty products with real-time stock availability. Reliable
-          sourcing. Assured quality. Worldwide delivery.
-        </p>
+        <h1>Products</h1>
+        <p>Browse product grades and request a quotation from Padna Sivan.</p>
       </Hero>
-      <div className="mx-container mx-filter-container">
-        <div className="mx-filter-ribbon">
-          {Object.entries(filterOptions).map(([key, options]) => (
-            <label key={key}>
-              <span>
-                {key === "status"
-                  ? "Availability"
-                  : key[0].toUpperCase() + key.slice(1)}
-              </span>
-              <select
-                value={filters[key]}
-                onChange={(e) => setFilter(key, e.target.value)}
-              >
-                <option value="">
-                  {`All ${key === "status" ? "Availability" : {
-                    category: "Categories", grade: "Grades", origin: "Origins",
-                    packing: "Packings", application: "Applications",
-                  }[key]}`}
-                </option>
-                {options.map((option) => (
-                  <option key={option}>{option}</option>
-                ))}
-              </select>
-            </label>
-          ))}
-        </div>
-      </div>
       <div className="mx-container mx-catalog-layout">
         <aside
           className={`mx-filter-sidebar ${showMobileFilters ? "is-open" : ""}`}
@@ -742,49 +712,17 @@ export function MockCatalog({ navigate, route }) {
               </Action>
             </div>
           )}
-          <section className="mx-section mx-catalog-stock" id="stock">
-            <SectionTitle
-              title="Current Stock Overview"
-              link="/stock"
-              linkText="View All Stock"
-              navigate={navigate}
-            />
-            <StockTable navigate={navigate} />
-          </section>
-        </div>
-      </div>
-      <div className="mx-trust-strip">
-        <div className="mx-container">
-          {[
-            {
-              icon: "shield",
-              title: "Quality Assured",
-              text: "Strict quality control and third-party inspection.",
-            },
-            {
-              icon: "globe",
-              title: "Global Logistics",
-              text: "Reliable worldwide shipping and flexible packaging.",
-            },
-            {
-              icon: "file",
-              title: "Full Documentation",
-              text: "COA, MSDS and export documents provided.",
-            },
-            {
-              icon: "headset",
-              title: "Expert Support",
-              text: "Our team helps you find the right product fast.",
-            },
-          ].map((item) => (
-            <div key={item.title}>
-              <Icon name={item.icon} size={36} />
-              <span>
-                <strong>{item.title}</strong>
-                <small>{item.text}</small>
-              </span>
-            </div>
-          ))}
+          {!routeSearch && Object.values(filters).every((value) => !value) && (
+            <section className="mx-section mx-catalog-stock" id="stock">
+              <SectionTitle
+                title="Current Stock Overview"
+                link="/stock"
+                linkText="View All Stock"
+                navigate={navigate}
+              />
+              <StockTable navigate={navigate} />
+            </section>
+          )}
         </div>
       </div>
     </div>
@@ -793,7 +731,10 @@ export function MockCatalog({ navigate, route }) {
 
 export function MockStock({ navigate }) {
   return (
-    <div className="mx-page">
+    <div className="mx-page mx-stock">
+      <div className="mx-container mx-preview-warning" role="note">
+        Design demo: stock quantities and availability shown here are illustrative, not verified company inventory.
+      </div>
       <Hero mode="compact">
         <div className="mx-breadcrumb">Home › Current Stock</div>
         <h1>
@@ -994,6 +935,9 @@ export function MockProductDetail({ slug, navigate }) {
         ];
   return (
     <div className="mx-page mx-detail">
+      <div className="mx-container mx-preview-warning" role="note">
+        Design demo: product details and stock shown here are illustrative, not verified company data.
+      </div>
       <Hero mode="detail">
         <div className="mx-breadcrumb">
           Home › Products › {product.category} › {product.fullName}
@@ -1006,19 +950,6 @@ export function MockProductDetail({ slug, navigate }) {
           High-quality {product.group.toLowerCase()} for a wide range of
           industrial and marine applications.
         </p>
-        <div className="mx-detail-badges">
-          {[
-            { icon: "shield", label: "Reliable Global Supply" },
-            { icon: "diamond", label: "Consistent Quality" },
-            { icon: "truck", label: "Worldwide Delivery" },
-            { icon: "gear", label: "Technical Support" },
-          ].map((item) => (
-            <div key={item.label}>
-              <Icon name={item.icon} size={26} />
-              <span>{item.label}</span>
-            </div>
-          ))}
-        </div>
       </Hero>
       <div className="mx-container mx-detail-layout">
         <div className="mx-detail-main">

@@ -6,6 +6,7 @@ import { ShipmentWorkbench } from "./phase3";
 import { IntegrationWorkbench } from "./integrations";
 import { Icon, StatusTag } from "./design-system";
 import { formatDate } from "./locale-format";
+import { productCategories } from "./productCategories";
 
 const workspaceIcons = {
   inbox: "file",
@@ -868,12 +869,11 @@ function AdminTools({ session }) {
                 setProduct({ ...product, category: e.target.value })
               }
             >
-              <option>Base Oils</option>
-              <option>Industrial Lubricants</option>
-              <option>Greases</option>
-              <option>Process Oils</option>
-              <option>White Oil</option>
-              <option>Antifreeze</option>
+              {productCategories.map((productCategory) => (
+                <option key={productCategory} value={productCategory}>
+                  {productCategory}
+                </option>
+              ))}
             </select>
           </label>
           <label>
