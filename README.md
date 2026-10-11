@@ -22,7 +22,7 @@ npm.cmd run dev
 
 Open the URL printed by Vite, normally `http://127.0.0.1:5173`. The development server proxies `/api` to FastAPI. Create separate `sales` and `procurement` accounts with `python -m backend.create_admin <email> <role>` if you want to test role-specific inboxes. Passwords are entered interactively and are not stored in shell history.
 
-The site starts with **no products or stock**. Sign in at `/staff` as an admin to add approved product and lot information. The supplied images illustrate industrial equipment; they do not verify company facilities, brands, stock, or certifications.
+The four reference-driven public pages currently use **demo content** from `frontend/src/mockData.js`. This includes PETROVEX branding and sample products, stock, staff, offices, statistics, technical values, and certificates. It is separate from the FastAPI database; no mock stock is saleable inventory. The Buy, Sell, and Contact forms still use the API. Sign in at `/staff` as an admin to add approved backend products and lots, but they will not appear in the demo public catalog until the mock data is replaced with API data. See [UI-UX-BRIEF.md](UI-UX-BRIEF.md) for the replacement boundary.
 
 ## Phase 1 functionality
 
@@ -85,6 +85,8 @@ npm.cmd run build
 ```
 
 Local headless Chrome smoke checks rendered Home, Buy, Sell, Staff sign-in, and Portal sign-in at 390, 768, and 1280 CSS pixels with no page-level horizontal overflow. An isolated admin login rendered the shipment and integration workbenches, and a verified customer login rendered portal tracking at 390 pixels. A browser-submitted Buy Request produced a reference and one persisted inquiry. These are targeted Chrome checks; full keyboard and screen-reader operation, document flows, Safari/Firefox/Edge, and real mobile devices still need a release QA pass.
+
+The reference-driven demo pages were also checked in headless Chrome at 390, 768, and 1280 CSS pixels: Home, catalog, product detail, About, sample team profile, stock, and insights rendered without broken images, JavaScript exceptions, or page-level horizontal overflow. Catalog filters, grid/table switching, mobile navigation, and the product quote handoff were exercised. The browser check confirmed that contact details do not enter the quote URL. These checks do not verify the illustrative business claims or replace a release QA pass.
 
 ## Configuration
 

@@ -1,6 +1,82 @@
 import React, { useEffect, useState } from "react";
-import heroImage from "../../ui-images/home-hero.png";
+import heroImage from "./assets/industrial-harbor.png";
+import baseOilsImage from "./assets/base-oils.png";
+import lubricantsImage from "./assets/industrial-lubricants.png";
+import greasesImage from "./assets/greases.png";
+import processOilsImage from "./assets/process-oils.png";
+import { consumeQuoteDraft } from "./quoteDraft";
 import { api, Link, SectionHead, useData, DataState } from "./shared";
+
+const familyCards = [
+  {
+    label: "Base oils",
+    category: "Base Oils",
+    image: baseOilsImage,
+    description: "Published base oil grades and product information.",
+  },
+  {
+    label: "Industrial lubricants",
+    category: "Industrial Lubricants",
+    image: lubricantsImage,
+    description: "Lubricants for industrial applications.",
+  },
+  {
+    label: "Greases",
+    category: "Greases",
+    image: greasesImage,
+    description: "Available grease products and grades.",
+  },
+  {
+    label: "Process oils",
+    category: "Process Oils",
+    image: processOilsImage,
+    description: "Process oil specifications and availability.",
+  },
+];
+
+function categoryImage(category) {
+  return familyCards.find((item) => item.category === category)?.image || null;
+}
+
+function ProductCard({ item, navigate }) {
+  return (
+    <Link
+      to={`/products/${item.slug}`}
+      navigate={navigate}
+      className="product-card visual-product-card"
+    >
+      <span className="product-card-media">
+        {categoryImage(item.category) ? (
+          <img
+            src={categoryImage(item.category)}
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <span className="product-card-placeholder" aria-hidden="true">
+            ◆
+          </span>
+        )}
+        <small>
+          {categoryImage(item.category)
+            ? "Category illustration"
+            : "Product information"}
+        </small>
+      </span>
+      <span className="product-card-body">
+        <span>{item.category}</span>
+        <strong className="product-card-name">{item.name}</strong>
+        <span className="product-card-grade">
+          {item.grade || "Grade details on request"}
+        </span>
+        <b>
+          View product <span aria-hidden="true">→</span>
+        </b>
+      </span>
+    </Link>
+  );
+}
 
 export function Home({ navigate }) {
   const [query, setQuery] = useState("");
@@ -9,15 +85,18 @@ export function Home({ navigate }) {
   return (
     <>
       <section className="home-hero">
+        <img className="home-hero-background" src={heroImage} alt="" />
         <div className="container home-hero-grid">
           <div className="home-hero-copy">
             <span className="eyebrow">
               INDUSTRIAL OILS · DIRECT COMPANY SUPPLY
             </span>
-            <h1>Find the oil you need. Start the right conversation.</h1>
+            <h1>
+              <em>Base oils</em> & industrial lubricants
+            </h1>
             <p>
-              Review published products and stock, then send your requirement
-              directly to the company. Supplier offers are handled privately.
+              Explore approved product information, review published stock, and
+              send a purchasing requirement directly to the company.
             </p>
             <form
               className="home-search"
@@ -36,7 +115,7 @@ export function Home({ navigate }) {
                   type="search"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Product name or grade"
+                  placeholder="Name, grade or application"
                 />
                 <button type="submit" className="button">
                   Search
@@ -44,22 +123,19 @@ export function Home({ navigate }) {
               </div>
             </form>
             <div className="home-hero-links">
-              <Link to="/buy" navigate={navigate} className="button">
-                Request a quotation <span aria-hidden="true">↗</span>
+              <Link to="/products" navigate={navigate} className="button">
+                View products <span aria-hidden="true">→</span>
               </Link>
-              <Link to="/stock" navigate={navigate} className="plain-link">
-                Check published stock <span aria-hidden="true">→</span>
+              <Link to="/buy" navigate={navigate} className="outline-button">
+                Request a quote <span aria-hidden="true">→</span>
+              </Link>
+              <Link to="/sell" navigate={navigate} className="outline-button">
+                Sell to us <span aria-hidden="true">→</span>
               </Link>
             </div>
           </div>
-          <figure className="home-hero-figure">
-            <img
-              src={heroImage}
-              alt="Illustration of industrial hydraulic machinery"
-            />
-            <figcaption>Industrial equipment illustration</figcaption>
-          </figure>
         </div>
+        <span className="hero-image-note">Illustrative industry image</span>
       </section>
       <section
         className="container home-pathways"
@@ -102,19 +178,20 @@ export function Home({ navigate }) {
           </Link>
         </div>
         <div className="family-list">
-          {[
-            ["Base oils", "Base Oils"],
-            ["Industrial lubricants", "Industrial Lubricants"],
-            ["Greases", "Greases"],
-            ["Process oils", "Process Oils"],
-          ].map(([label, value]) => (
+          {familyCards.map((family) => (
             <Link
-              key={value}
-              to={`/products?category=${encodeURIComponent(value)}`}
+              key={family.category}
+              to={`/products?category=${encodeURIComponent(family.category)}`}
               navigate={navigate}
               className="family-link"
             >
-              {label} <span aria-hidden="true">→</span>
+              <img src={family.image} alt="" loading="lazy" decoding="async" />
+              <span className="family-link-body">
+                <strong>
+                  {family.label} <span aria-hidden="true">→</span>
+                </strong>
+                <small>{family.description}</small>
+              </span>
             </Link>
           ))}
         </div>
@@ -208,17 +285,7 @@ export function Home({ navigate }) {
         ) : published.data?.length ? (
           <div className="product-grid">
             {published.data.slice(0, 3).map((item) => (
-              <Link
-                key={item.id}
-                to={`/products/${item.slug}`}
-                navigate={navigate}
-                className="product-card"
-              >
-                <span>{item.category}</span>
-                <h3>{item.name}</h3>
-                <p>{item.grade || "Details available on request"}</p>
-                <strong>Review product</strong>
-              </Link>
+              <ProductCard key={item.id} item={item} navigate={navigate} />
             ))}
           </div>
         ) : (
@@ -359,17 +426,7 @@ export function Catalog({ navigate, route }) {
       {state.data?.length > 0 && (
         <div className="product-grid">
           {state.data.map((item) => (
-            <Link
-              key={item.id}
-              to={`/products/${item.slug}`}
-              navigate={navigate}
-              className="product-card"
-            >
-              <span>{item.category}</span>
-              <h2>{item.name}</h2>
-              <p>{item.grade || "Product details available on request"}</p>
-              <strong>View details ↗</strong>
-            </Link>
+            <ProductCard key={item.id} item={item} navigate={navigate} />
           ))}
         </div>
       )}
@@ -385,21 +442,38 @@ export function Catalog({ navigate, route }) {
 
 export function ProductDetail({ slug, navigate }) {
   const state = useData(`/products/${encodeURIComponent(slug)}`);
+  const [quickQuote, setQuickQuote] = useState({
+    quantity: "",
+    unit: "MT",
+    destination_country: "",
+  });
   if (state.loading)
     return <div className="container page notice">Loading product…</div>;
   if (state.error)
     return <div className="container page notice error">{state.error}</div>;
   const product = state.data;
   return (
-    <div className="container page">
-      <Link to="/products" navigate={navigate} className="back-link">
-        ← Back to products
-      </Link>
-      <span className="eyebrow">{product.category}</span>
-      <h1>{product.name}</h1>
-      <p className="page-lead">{product.grade}</p>
+    <div className="container page product-page">
+      <div className="product-intro">
+        <Link to="/products" navigate={navigate} className="back-link">
+          ← Back to products
+        </Link>
+        <span className="eyebrow">{product.category}</span>
+        <h1>{product.name}</h1>
+        <p className="page-lead">
+          {product.grade || "Grade details on request"}
+        </p>
+      </div>
       <div className="detail-grid">
         <div>
+          {categoryImage(product.category) && (
+            <figure className="product-visual">
+              <img src={categoryImage(product.category)} alt="" />
+              <figcaption>
+                Illustrative {product.category.toLowerCase()} image
+              </figcaption>
+            </figure>
+          )}
           <SectionHead eyebrow="PRODUCT INFORMATION" title="Overview" />
           <p>
             {product.description ||
@@ -414,16 +488,76 @@ export function ProductDetail({ slug, navigate }) {
           <span className="eyebrow">COMMERCIAL INQUIRY</span>
           <h2>Request a quotation</h2>
           <p>
-            Share your required quantity and destination. The team will review
-            the request.
+            Start with your quantity and destination. Complete your contact
+            details on the next page.
           </p>
-          <Link
-            to={`/buy?product_id=${product.id}`}
-            navigate={navigate}
-            className="button"
+          <form
+            className="quick-quote-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              navigate(
+                `/buy?${new URLSearchParams({
+                  product_id: product.id,
+                  quantity: quickQuote.quantity,
+                  unit: quickQuote.unit,
+                  destination_country: quickQuote.destination_country.trim(),
+                }).toString()}`,
+              );
+            }}
           >
-            Request a quote ↗
-          </Link>
+            <div className="form-grid">
+              <label>
+                Quantity
+                <input
+                  type="number"
+                  min="0.001"
+                  step="any"
+                  required
+                  value={quickQuote.quantity}
+                  onChange={(event) =>
+                    setQuickQuote({
+                      ...quickQuote,
+                      quantity: event.target.value,
+                    })
+                  }
+                  placeholder="Amount"
+                />
+              </label>
+              <label>
+                Unit
+                <select
+                  value={quickQuote.unit}
+                  onChange={(event) =>
+                    setQuickQuote({ ...quickQuote, unit: event.target.value })
+                  }
+                >
+                  {["MT", "KG", "Litre", "Barrel", "Drum", "IBC"].map(
+                    (unit) => (
+                      <option key={unit}>{unit}</option>
+                    ),
+                  )}
+                </select>
+              </label>
+            </div>
+            <label>
+              Destination country
+              <input
+                required
+                maxLength="80"
+                value={quickQuote.destination_country}
+                onChange={(event) =>
+                  setQuickQuote({
+                    ...quickQuote,
+                    destination_country: event.target.value,
+                  })
+                }
+                placeholder="Country"
+              />
+            </label>
+            <button className="button" type="submit">
+              Continue request <span aria-hidden="true">→</span>
+            </button>
+          </form>
         </aside>
       </div>
       <SectionHead eyebrow="PUBLISHED STOCK" title="Current availability" />
@@ -466,13 +600,15 @@ export function Stock({ navigate }) {
   const [revision, setRevision] = useState(0);
   const state = useData(`/stock?r=${revision}`);
   return (
-    <div className="container page">
-      <span className="eyebrow">CURRENT STOCK</span>
-      <h1>Published availability</h1>
-      <p className="page-lead">
-        These entries show stock approved for public display. Availability is
-        subject to confirmation when you inquire.
-      </p>
+    <div className="container page stock-page">
+      <div className="stock-intro">
+        <span className="eyebrow">CURRENT STOCK</span>
+        <h1>Published availability</h1>
+        <p className="page-lead">
+          These entries show stock approved for public display. Availability is
+          subject to confirmation when you inquire.
+        </p>
+      </div>
       <DataState
         state={state}
         empty="No stock has been approved for public display yet. Browse products or send us your requirement."
@@ -520,20 +656,32 @@ export function Stock({ navigate }) {
 
 export function InquiryForm({ kind, navigate, route }) {
   const params = new URLSearchParams(route.split("?")[1] || "");
+  const quoteDraft = kind === "buy" ? consumeQuoteDraft() : null;
   const products = useData("/products");
   const [form, setForm] = useState({
     kind,
-    company_name: "",
+    company_name: (quoteDraft?.company_name || "").slice(0, 160),
     contact_name: "",
-    email: "",
+    email: (quoteDraft?.email || "").slice(0, 254),
     product_id: params.get("product_id") || "",
     lot_id: params.get("lot_id") || "",
     product_text: (params.get("product_text") || "").slice(0, 160),
-    quantity: "",
-    unit: "MT",
-    destination_country: "",
+    quantity: (quoteDraft?.quantity || params.get("quantity") || "").slice(
+      0,
+      24,
+    ),
+    unit: ["MT", "KG", "Litre", "Barrel", "Drum", "IBC"].includes(
+      quoteDraft?.unit || params.get("unit"),
+    )
+      ? quoteDraft?.unit || params.get("unit")
+      : "MT",
+    destination_country: (
+      quoteDraft?.destination_country ||
+      params.get("destination_country") ||
+      ""
+    ).slice(0, 80),
     origin: "",
-    message: "",
+    message: (quoteDraft?.message || "").slice(0, 2000),
     privacy_accepted: false,
   });
   const [busy, setBusy] = useState(false);
@@ -862,13 +1010,54 @@ export function InquiryForm({ kind, navigate, route }) {
 
 export function About({ navigate }) {
   return (
-    <div className="container page">
-      <span className="eyebrow">ABOUT THE COMPANY</span>
-      <h1>Built for clear industrial trade.</h1>
-      <p className="page-lead">
-        Verified company history, locations, certifications, and team profiles
-        will be published here after approval.
-      </p>
+    <div className="container page about-page">
+      <div className="about-intro">
+        <span className="eyebrow">ABOUT THE COMPANY</span>
+        <h1>Industrial trade, presented clearly.</h1>
+        <p className="page-lead">
+          Explore published products and stock, or speak with the team about a
+          specific requirement. Verified company history, locations, and team
+          profiles will appear here after approval.
+        </p>
+        <Link to="/buy" navigate={navigate} className="button">
+          Request a quote <span aria-hidden="true">→</span>
+        </Link>
+      </div>
+      <div className="about-grid">
+        <section>
+          <span>01 / PRODUCTS</span>
+          <h2>Published information</h2>
+          <p>
+            Product pages show approved descriptions, applications, packaging,
+            and public stock entries.
+          </p>
+          <Link to="/products" navigate={navigate}>
+            Explore products →
+          </Link>
+        </section>
+        <section>
+          <span>02 / BUYING</span>
+          <h2>Direct inquiries</h2>
+          <p>
+            Customers can send a requirement without creating an account. The
+            team reviews each submission.
+          </p>
+          <Link to="/buy" navigate={navigate}>
+            Request a quotation →
+          </Link>
+        </section>
+        <section>
+          <span>03 / PROCUREMENT</span>
+          <h2>Private supplier offers</h2>
+          <p>
+            Suppliers can submit products for procurement review. Offers do not
+            appear in the public catalog.
+          </p>
+          <Link to="/sell" navigate={navigate}>
+            Offer supply →
+          </Link>
+        </section>
+      </div>
       <div className="context-cta">
         <p>Need product information now?</p>
         <Link to="/contact" navigate={navigate}>

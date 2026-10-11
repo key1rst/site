@@ -1,48 +1,57 @@
-# Industrial oils website: UI/UX starter brief
+# Industrial oils website: UI/UX brief
 
 ## Working assumptions
 
-- Launch as one company's bilingual (English/Persian) B2B catalog with a request-for-quote flow.
-- Keep product browsing public and the sales CRM private to staff.
-- Confirm whether independent sellers, online checkout, and country-specific prices are needed before designing those flows.
+- Launch as one company's B2B product catalog with public stock and inquiry flows, plus private staff and client areas.
+- The four screenshots in `ui-images/` define the current public-page visual demo. PETROVEX and the depicted company, product, stock, team, office, certification, and technical information are sample content only.
+- Keep the mock catalog and company facts isolated in `frontend/src/mockData.js` until approved content and API integration replace them. Public inquiry forms still submit to FastAPI.
 
-## First screens to design
+## Core screens
 
 | Screen | Main user task | Essential elements |
 | --- | --- | --- |
-| Home | Understand the offer and start searching | Clear value proposition, product search, category links, quote CTA, company trust cues |
-| Product catalog | Find a suitable oil | Search; filters for application, brand, ISO VG, approval/specification, and package size; clear empty state |
-| Product detail | Check suitability and inquire | Product name/grade, applications, specifications and approvals, pack sizes, PDS/TDS and SDS downloads, quote CTA |
-| Quote request | Send a usable purchasing inquiry | Selected product/grade, quantity and unit, delivery location, company/contact, target date, confirmation state |
-| Company and team | Verify who is selling | Actual company story, address, capabilities, real team names/roles/photos, contact routes |
-| Staff CRM | Respond to and track inquiries | Sign-in, lead list, lead detail, assigned owner, status, notes, follow-up date, quote history |
+| Home | Understand the offer and start searching | Clear offer, product search, category links, quote action, current stock preview |
+| Product catalog | Find a suitable oil | Search, category and grade filters, clear empty state |
+| Product detail | Check suitability and inquire | Product information, published stock, quick quote handoff |
+| Quote request | Send a usable purchasing inquiry | Product, quantity and unit, destination, contact details, confirmation state |
+| Company and contact | Verify the seller and get in touch | Approved company details and real contact routes |
+| Staff and client areas | Follow up on commercial activity | Sign-in, inquiry and quotation workflows, shipment information |
 
-## Visual direction
+## Visual direction from `ui-images/`
 
-- Industrial, credible, precise. Use spacious layouts, readable type, high contrast, and restrained navy/steel/amber accents as an initial direction; refine to the real brand identity when supplied.
-- Put headings, buttons, specifications, and other meaningful content in HTML rather than baking English or Persian text into images.
-- Use a shared component system for both languages. Mirror layout and navigation for Persian; keep oil grades, model numbers, units, and file names legible in mixed-direction text.
-- Design mobile catalog filtering and the quote form early, since both are core buying tasks.
+- White header, deep navy industrial photography, amber actions, generous spacing, and serif display headings.
+- Image-led category and product cards with clear labels, grades, and actions.
+- Keep headings, product information, stock, buttons, and forms as HTML so they remain responsive and accessible.
+- Mobile navigation, catalog filters, and inquiry forms must remain usable at narrow widths.
+- Show the PETROVEX name and mock business details for this preview only; the footer identifies the site as a demo.
 
-## Image inventory
+## Implemented visual assets
 
-| File | Suggested placement | Suggested English alt text | Suggested Persian alt text |
-| --- | --- | --- | --- |
-| `ui-images/home-hero.png` | Home hero or category introduction | Industrial hydraulic machinery with lubricant reservoir | ماشین‌آلات هیدرولیک صنعتی و مخزن روانکار |
-| `ui-images/category-hydraulic-oils.png` | Hydraulic oils category card | Industrial hydraulic press | پرس هیدرولیک صنعتی |
-| `ui-images/category-gear-oils.png` | Gear oils category card | Industrial gearbox with visible gears | گیربکس صنعتی با چرخ‌دنده‌های نمایان |
-| `ui-images/company-facility.png` | About page visual placeholder | Industrial oil warehouse with drums and containers | انبار روغن صنعتی با بشکه‌ها و مخازن |
+| Asset | Placement | Description |
+| --- | --- | --- |
+| `frontend/src/assets/mock-hero.png` | Home, catalog, stock, product, and About banners | Illustrative refinery, ship, and container scene |
+| `frontend/src/assets/mock-beaker.png` | Product cards | Illustrative base-oil sample |
+| `frontend/src/assets/mock-drum.png` | Product detail gallery | Illustrative oil drum |
+| `frontend/src/assets/mock-logistics.png` | Packaging cards | Illustrative logistics options |
+| `frontend/src/assets/mock-team.png` | Team cards | Illustrative portraits; these are not actual employees |
+| `frontend/src/assets/mock-offices.png` | About office cards | Illustrative cityscapes; these are not verified offices |
+| `frontend/src/assets/mock-map.png` | Global presence areas | Illustrative map; dots do not represent verified markets |
+| `frontend/src/assets/base-oils.png` | Base oils category and product cards | Illustrative base oil containers |
+| `frontend/src/assets/industrial-lubricants.png` | Industrial lubricants category and product cards | Illustrative lubricant containers |
+| `frontend/src/assets/greases.png` | Greases category and product cards | Illustrative grease containers |
+| `frontend/src/assets/process-oils.png` | Process oils category and product cards | Illustrative process oil containers |
 
-These images are AI-generated **illustrations of the industry**. Do not present `company-facility.png` as a photograph of the company's actual site. Use real staff portraits, facilities, product packaging, certifications, and supplier documents once available.
+These are generated visuals and do not depict this company's actual facilities, products, staff, or offices. Replace them with approved photography when available. The mock images are large PNGs; optimize approved replacement images before release.
 
-## Content needed before high-fidelity screens
+## Content still needed
 
-1. Company name, logo, real contact details, launch countries, and sales model.
-2. Initial product list with brand, category, ISO VG, pack sizes, approved claims/specifications, and PDS/SDS files.
-3. Exact quote process: sales owner, expected response time, pricing policy, and delivery regions.
-4. Real company/facility/team photos and permission to publish them.
-5. Approved English and Persian copy, including product names, terminology, and form messages.
+1. Approved company name, logo, contacts, sales regions, and brand guidelines.
+2. Product images, approved specifications, grade information, and supplier documents.
+3. Verified company history, capabilities, team, facilities, and certifications if those are to appear on the site.
+4. Approved English and Persian copy if bilingual launch remains a requirement.
 
-## Image generation prompts
+## Demo routes and handoff
 
-Built-in image generation was used for all four assets. The prompts requested: (1) a wide modern hydraulic-machinery hero with restrained amber lubricant detail, (2) a square hydraulic press category photograph, (3) a square industrial gearbox category photograph, and (4) a wide clean oil-warehouse photograph. All prompts specified a realistic navy/steel/amber treatment with no text, logos, watermarks, or people.
+- `/`, `/products`, `/products/:slug`, `/stock`, `/about`, `/team/:slug`, and `/insights` currently render the demo content.
+- Product and stock quote actions carry the sample product name into `/buy`; the existing FastAPI inquiry flow remains the submission path. No mock stock entry is treated as a real inventory lot.
+- Replace `frontend/src/mockData.js` values first, then connect these pages to approved public product, stock, company, and editorial endpoints. Remove the demo footer note only after content verification.
